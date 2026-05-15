@@ -4,7 +4,7 @@ compatibility_date = "2025-05-01"
 
 # Public, non-secret config. Add your prod + local origins here.
 [vars]
-ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,https://scrolls.fun"
+ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,https://scrolls.fun,https://www.scrolls.fun,https://scrolls-tau.vercel.app"
 RATE_LIMIT_PER_WINDOW = "60"
 RATE_LIMIT_WINDOW_SECONDS = "600"
 
