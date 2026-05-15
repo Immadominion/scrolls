@@ -1,0 +1,24 @@
+name = "scrolls-ai-proxy"
+main = "src/worker.ts"
+compatibility_date = "2025-05-01"
+
+# Public, non-secret config. Add your prod + local origins here.
+[vars]
+ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,https://scrolls.fun"
+RATE_LIMIT_PER_WINDOW = "60"
+RATE_LIMIT_WINDOW_SECONDS = "600"
+
+# Created with: wrangler kv namespace create RATE_LIMIT
+# Replace the placeholder id below with the value wrangler prints.
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "7f357fede949454da5dc04be62ada964"
+
+# Created with: wrangler kv namespace create LINKS
+# Stores short-link records under keys like `s:<code>`.
+[[kv_namespaces]]
+binding = "LINKS"
+id = "229ef8d865f44c79a851e72de1807ef2"
+
+# Secrets (set via `wrangler secret put`, NOT here):
+#   ANTHROPIC_API_KEY

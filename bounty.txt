@@ -1,0 +1,31 @@
+Walrus Session 2 – Form Tooling
+May 5 - 18
+$1,500 Prize Pool
+Description
+Build a Walrus-native feedback and form platform that enables teams and communities to collect structured feedback directly on-chain.
+
+Create tools that allow users to submit bug reports, feature requests, surveys, and applications with rich inputs like text, media, and links. Submissions must be stored on Walrus, with optional encryption via Seal for private data.
+
+The platform should include:
+
+- Custom form builder (fields, required/optional inputs)
+- Supported inputs should include: rich text, dropdowns, checkboxes, star ratings, screenshots, video uploads, URLs, required fields
+- Shareable form links
+- Walrus-based storage for submissions
+- Admin dashboard for filtering, reviewing, and prioritizing feedback, export csv
+
+Goal: ship a REAL product that improves how feedback and communication work in the Walrus ecosystem for Sessions
+
+Submission Requirements:
+- Provide links to your app, demo, repository, video, or screenshot thread.
+- Include a short explanation of what you built.
+- Submit a publicly accessible repository.
+- Ensure at least one real feedback submission is made using your tool.
+- Upload a demo video (under 3 minutes) on Walrus showcasing your product using your own tool.
+- Register your submission using this form which can also be used somewhat as inspiration: https://airtable.com/appoDAKpC74UOqoDa/shrN8UbJRdbkd5Lso
+
+
+Along with main prizing:
+6 winners: $50 WAL (Best Feedback regarding building on Walrus) - To be registered in the submission form
+Special Prizes: $200 WAL
+

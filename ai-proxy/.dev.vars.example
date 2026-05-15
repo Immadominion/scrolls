@@ -1,0 +1,16 @@
+# Cloudflare Worker LOCAL secrets (used by `wrangler dev`).
+#
+# Copy this file to `.dev.vars` and paste in real values.
+# `.dev.vars` is gitignored. NEVER commit secrets.
+#
+# In production, set these via:
+#   wrangler secret put ANTHROPIC_API_KEY
+#   wrangler secret put OPENAI_API_KEY
+# (DO NOT put production values in this file.)
+
+# Required — Anthropic Claude API key for the form generator.
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# Optional — OpenAI key for Whisper voice transcription at /transcribe.
+# Leave commented if you are not using voice input locally.
+# OPENAI_API_KEY=sk-...
