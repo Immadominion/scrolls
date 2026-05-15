@@ -9,8 +9,9 @@
 
 Submission for **Walrus Sessions Round 2 — Form Tooling** ($1,500).
 
-- 🌐 **Live:** *fill in after deploy* — see [`DEPLOY.md`](./DEPLOY.md)
-- 🎥 **Demo (on Walrus):** *fill in after deploy*
+- 🌐 **Live (Walrus Site):** [`3z1329sy….wal.app`](https://3z1329syoieg9laz3kilwa9y98d2i1raqqodp74rmyc9n4fnmu.testnet.wal.app)
+- 🌐 **Live (Vercel mirror):** *fill in after Vercel deploy*
+- 🎥 **Demo (on Walrus):** *fill in after recording*
 - 🐳 **Move package (Sui testnet):** [`0x6418bc0c…7b10a0`](https://suiscan.xyz/testnet/object/0x6418bc0c11e75ef443f7e8fedb9a860b6cc3bfe5909481dc309472ad8b7b10a0)
 
 ---
