@@ -1,0 +1,248 @@
+@import "tailwindcss";
+
+/* ── Theme Tokens ────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --background-app: #0a0a0a;
+    --background-subtle: rgba(255, 255, 255, 0.03);
+
+    --surface-solid: #111111;
+    --surface-muted: #18181b;
+    --surface-panel: rgba(15, 15, 15, 0.72);
+    --surface-panel-strong: rgba(15, 15, 15, 0.94);
+    --surface-raised: #0f0f0f;
+
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-default: rgba(255, 255, 255, 0.1);
+    --border-strong: #222222;
+
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+    --text-muted: #52525b;
+    --text-soft: #3f3f46;
+    --text-inverse: #0a0a0a;
+
+    --brand-primary: #a78bfa;
+    --brand-primary-hover: #c4b5fd;
+    --brand-primary-soft: rgba(167, 139, 250, 0.14);
+    --brand-secondary: #06b6d4;
+    --brand-secondary-soft: rgba(6, 182, 212, 0.1);
+
+    --status-danger: #ef4444;
+    --status-danger-soft: rgba(239, 68, 68, 0.1);
+    --status-danger-text: #fca5a5;
+
+    --shadow-panel: 0 32px 120px -36px rgba(0, 0, 0, 0.88);
+    --dot-grid-color: rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --background-app: #f8f6f0;
+    --background-subtle: rgba(0, 0, 0, 0.03);
+
+    --surface-solid: #fcfcfc;
+    --surface-muted: #f0eee6;
+    --surface-panel: rgba(248, 246, 240, 0.85);
+    --surface-panel-strong: rgba(252, 252, 252, 0.94);
+    --surface-raised: #ffffff;
+
+    --border-subtle: rgba(33, 26, 38, 0.06);
+    --border-default: rgba(33, 26, 38, 0.12);
+    --border-strong: rgba(33, 26, 38, 0.20);
+
+    --text-primary: #17141b;
+    --text-secondary: #5f5965;
+    --text-tertiary: #7a7380;
+    --text-muted: #958e9a;
+    --text-soft: #ada6b2;
+    --text-inverse: #ffffff;
+
+    --brand-primary: #8b5cf6;
+    --brand-primary-hover: #7c3aed;
+    --brand-primary-soft: rgba(139, 92, 246, 0.1);
+    --brand-secondary: #0891b2;
+    --brand-secondary-soft: rgba(8, 145, 178, 0.1);
+
+    --status-danger: #dc2626;
+    --status-danger-soft: rgba(220, 38, 38, 0.08);
+    --status-danger-text: #b91c1c;
+
+    --shadow-panel: 0 32px 120px -48px rgba(76, 56, 123, 0.16), 0 16px 48px -32px rgba(15, 23, 42, 0.18);
+    --dot-grid-color: rgba(33, 26, 38, 0.08);
+}
+
+
+/* ── Scrolls Brand Tokens (Tailwind 4 CSS-first config) ── */
+@theme inline {
+    /* Colors */
+    --color-background: var(--background-app);
+    --color-surface: var(--surface-solid);
+    --color-surface-2: var(--surface-muted);
+    --color-border: var(--border-strong);
+
+    --color-accent-purple: var(--brand-primary);
+    --color-accent-cyan: var(--brand-secondary);
+    --color-accent-emerald: #10b981;
+    --color-accent-purple-muted: var(--brand-primary-hover);
+
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-muted: var(--text-muted);
+
+    /* Fonts */
+    --font-display: 'Syne', sans-serif;
+    --font-sans: 'Inter', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: var(--background-app);
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--background-app);
+    color: var(--text-primary);
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+}
+
+/* ── Typography Utilities ── */
+.font-display {
+    font-family: var(--font-display), sans-serif;
+}
+
+/* ── Focus Visible Ring ── */
+:focus-visible {
+    outline: 1px solid var(--brand-primary-soft);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-solid);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ── TipTap rich-text editor ── */
+.tiptap-content {
+    min-height: 8rem;
+}
+
+.tiptap-content:focus {
+    outline: none;
+}
+
+.tiptap-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--text-muted);
+    float: left;
+    height: 0;
+    pointer-events: none;
+}
+
+/* StarterKit element styling — kept narrow on purpose. */
+.tiptap-content p {
+    margin: 0 0 0.5rem;
+}
+
+.tiptap-content h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.4rem;
+    color: var(--text-primary);
+}
+
+.tiptap-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0.6rem 0 0.3rem;
+    color: var(--text-primary);
+}
+
+.tiptap-content ul,
+.tiptap-content ol {
+    padding-left: 1.25rem;
+    margin: 0 0 0.5rem;
+}
+
+.tiptap-content ul {
+    list-style: disc;
+}
+
+.tiptap-content ol {
+    list-style: decimal;
+}
+
+.tiptap-content blockquote {
+    border-left: 2px solid var(--brand-primary);
+    padding-left: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0.5rem 0;
+}
+
+.tiptap-content code {
+    background: var(--surface-muted);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.85em;
+}
+
+.tiptap-content pre {
+    background: var(--surface-panel-strong);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+.tiptap-content pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.tiptap-content a {
+    color: var(--brand-primary);
+    text-decoration: underline;
+}
