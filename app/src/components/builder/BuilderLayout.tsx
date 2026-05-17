@@ -310,6 +310,26 @@ export default function BuilderLayout() {
         }));
     }, []);
 
+    const updateAdmins = useCallback((nextAdmins: string[]) => {
+        // Normalize: lowercase, dedupe, drop owner if accidentally added.
+        setFormConfig((prev) => {
+            const owner = (prev.ownerAddress ?? "").toLowerCase();
+            const seen = new Set<string>();
+            const cleaned: string[] = [];
+            for (const raw of nextAdmins) {
+                const a = raw.trim().toLowerCase();
+                if (!a || a === owner || seen.has(a)) continue;
+                seen.add(a);
+                cleaned.push(a);
+            }
+            return {
+                ...prev,
+                admins: cleaned,
+                updatedAt: new Date().toISOString(),
+            };
+        });
+    }, []);
+
     const handleGenerateWithAI = useCallback(async (prompt: string, incomingAttachments: File[] = []) => {
         const trimmed = prompt.trim();
         if (!trimmed || aiStatus === "generating") return;
@@ -356,6 +376,9 @@ export default function BuilderLayout() {
                 onOpenLibrary={() => setLibraryPinned((p) => !p)}
                 settings={formConfig.settings}
                 onUpdateSettings={updateSettings}
+                admins={formConfig.admins}
+                onUpdateAdmins={updateAdmins}
+                ownerAddress={formConfig.ownerAddress}
             />
 
             {/* Field library drawer (slide-over from left) */}

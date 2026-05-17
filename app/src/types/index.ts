@@ -81,6 +81,17 @@ export interface FormConfig {
      * Owner + admins listed on the policy can decrypt.
      */
     policyId?: string;
+    /**
+     * Additional Sui wallet addresses (lowercased, 0x-prefixed) that
+     * may review responses for this form alongside `ownerAddress`.
+     * Stored in the public form blob. For public forms this is an
+     * advisory access list — the responses page surfaces a "Reviewer"
+     * badge and the dashboard can pin the form for these addresses
+     * via the "Import shared form" affordance. For Seal-encrypted
+     * forms the on-chain `FormPolicy` is the source of truth for
+     * decryption rights; this list is mirrored there at publish time.
+     */
+    admins?: string[];
 }
 
 // ── Submission (stored as Walrus blob) ─────────────

@@ -25,6 +25,8 @@ import { getMyForms, getSubmissionsForForm } from "@/lib/registry";
 import { hasOnchainRegistry } from "@/lib/contracts";
 import { truncateAddress } from "@/lib/sui";
 import { listDrafts, removeDraft, type DraftEntry } from "@/lib/draftIndex";
+import { fetchJSON } from "@/lib/walrus";
+import type { FormConfig } from "@/types";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -56,6 +58,10 @@ export default function DashboardPage() {
     const [drafts, setDrafts] = useState<DraftEntry[]>([]);
     // Bumped after every storage write so we re-derive stats.
     const [refreshTick, setRefreshTick] = useState(0);
+    const [importOpen, setImportOpen] = useState(false);
+    const [importInput, setImportInput] = useState("");
+    const [importStatus, setImportStatus] = useState<"idle" | "loading" | "error" | "success">("idle");
+    const [importError, setImportError] = useState<string | null>(null);
 
     // Adopt forms created before the wallet was connected the first time.
     useEffect(() => {
@@ -142,6 +148,51 @@ export default function DashboardPage() {
 
     const accountAddress = account?.address ?? null;
     const isConnected = Boolean(accountAddress);
+
+    const handleImport = async () => {
+        const raw = importInput.trim();
+        if (!raw) return;
+        // Accept either a bare blob ID or a full /f?id=... URL.
+        let formId = raw;
+        try {
+            if (raw.startsWith("http")) {
+                const u = new URL(raw);
+                const id = u.searchParams.get("id");
+                if (id) formId = id;
+            }
+        } catch {
+            // not a URL — treat as bare ID.
+        }
+        if (!/^[A-Za-z0-9_\-]+$/.test(formId) || formId.length > 256) {
+            setImportError("That doesn't look like a valid form ID.");
+            setImportStatus("error");
+            return;
+        }
+        setImportStatus("loading");
+        setImportError(null);
+        try {
+            const config = await fetchJSON<FormConfig>(formId);
+            if (!config || typeof config !== "object" || !Array.isArray(config.fields)) {
+                throw new Error("Blob is not a Scrolls form.");
+            }
+            addForm(accountAddress, {
+                formId,
+                title: config.title || "Imported form",
+                createdAt: config.createdAt || new Date().toISOString(),
+                fieldCount: config.fields.length,
+                isPrivate: !!config.settings?.isPrivate,
+            });
+            setImportStatus("success");
+            setRefreshTick((t) => t + 1);
+            setTimeout(() => {
+                setImportOpen(false);
+                setImportStatus("idle");
+            }, 700);
+        } catch (err) {
+            setImportError(err instanceof Error ? err.message : "Could not load that form.");
+            setImportStatus("error");
+        }
+    };
 
     const stats = useMemo(() => {
         const totalResponses = forms.reduce((acc, f) => acc + f.responseCount, 0);
@@ -232,6 +283,21 @@ export default function DashboardPage() {
                         >
                             <Icon icon="fluent:add-12-regular" className="w-4 h-4" />
                         </Link>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setImportInput("");
+                                setImportError(null);
+                                setImportStatus("idle");
+                                setImportOpen(true);
+                            }}
+                            className="shrink-0 h-9 px-3 flex items-center gap-1.5 rounded-[14px] border border-[color:var(--border-subtle)] bg-[color:var(--background-subtle)] text-xs font-medium text-[color:var(--text-secondary)] transition-colors duration-200 hover:border-[color:var(--border-default)] hover:bg-[color:var(--surface-panel)] hover:text-[color:var(--text-primary)] mt-1"
+                            aria-label="Import a shared form"
+                            title="Import a form someone shared with you"
+                        >
+                            <Icon icon="fluent:arrow-import-24-regular" className="w-4 h-4" />
+                            <span className="hidden sm:inline">Import</span>
+                        </button>
                     </motion.div>
 
                     <DashboardContextCard
@@ -365,6 +431,102 @@ export default function DashboardPage() {
                     )}
                 </motion.div>
             </main>
+
+            <AnimatePresence>
+                {importOpen && (
+                    <motion.div
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={() => setImportOpen(false)}
+                    >
+                        <motion.div
+                            className="w-full max-w-md rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--surface-panel)] p-6 shadow-2xl"
+                            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+                            transition={{ duration: 0.22, ease: [0.25, 0.4, 0.25, 1] }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-start justify-between mb-4">
+                                <div>
+                                    <h2 className="text-lg font-display font-semibold text-[color:var(--text-primary)]">
+                                        Import a shared form
+                                    </h2>
+                                    <p className="text-xs text-[color:var(--text-secondary)] mt-1 leading-snug">
+                                        Paste a form ID or share link. If you&apos;re listed as a reviewer, the form&apos;s responses page will let you in.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setImportOpen(false)}
+                                    className="shrink-0 w-8 h-8 flex items-center justify-center rounded-[10px] text-[color:var(--text-muted)] hover:bg-[color:var(--background-subtle)] hover:text-[color:var(--text-primary)] transition-colors"
+                                    aria-label="Close"
+                                >
+                                    <Icon icon="fluent:dismiss-24-regular" className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                value={importInput}
+                                onChange={(e) => {
+                                    setImportInput(e.target.value);
+                                    if (importError) setImportError(null);
+                                    if (importStatus === "error") setImportStatus("idle");
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        handleImport();
+                                    }
+                                }}
+                                placeholder="Blob ID or https://scrolls.fun/f?id=…"
+                                spellCheck={false}
+                                autoComplete="off"
+                                autoFocus
+                                className="w-full px-3 py-2.5 text-sm font-mono bg-[color:var(--background-subtle)] border border-[color:var(--border-subtle)] rounded-[12px] outline-none focus:border-[#a78bfa]/40 text-[color:var(--text-primary)] placeholder:text-[color:var(--text-muted)]"
+                            />
+                            {importError && (
+                                <p className="text-[12px] text-[color:var(--status-danger)] mt-2">
+                                    {importError}
+                                </p>
+                            )}
+                            {importStatus === "success" && (
+                                <p className="text-[12px] text-[#06b6d4] mt-2 inline-flex items-center gap-1.5">
+                                    <Icon icon="fluent:checkmark-circle-24-filled" className="w-3.5 h-3.5" />
+                                    Added to your dashboard.
+                                </p>
+                            )}
+                            <div className="flex justify-end gap-2 mt-5">
+                                <button
+                                    type="button"
+                                    onClick={() => setImportOpen(false)}
+                                    className="px-3 py-2 text-xs font-medium text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleImport}
+                                    disabled={importStatus === "loading" || !importInput.trim()}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-[12px] bg-[color:var(--brand-primary)] text-[color:var(--text-inverse)] hover:bg-[color:var(--brand-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {importStatus === "loading" ? (
+                                        <>
+                                            <Icon icon="fluent:spinner-ios-20-regular" className="w-3.5 h-3.5 animate-spin" />
+                                            Importing…
+                                        </>
+                                    ) : (
+                                        "Import"
+                                    )}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -403,6 +403,29 @@ function ResponsesContent() {
                         <h1 className="text-3xl sm:text-4xl font-display font-bold text-[color:var(--text-primary)] tracking-tight leading-[1.1]">
                             {formConfig?.title ?? <SkeletonLine width="14rem" />}
                         </h1>
+                        {(() => {
+                            const viewer = account?.address?.toLowerCase() ?? "";
+                            const owner = formConfig?.ownerAddress?.toLowerCase() ?? "";
+                            const reviewerSet = formConfig?.admins ?? [];
+                            if (!viewer || !formConfig) return null;
+                            if (viewer === owner) {
+                                return (
+                                    <span className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 rounded-full bg-[#a78bfa]/10 border border-[#a78bfa]/25 text-[10px] font-medium text-[#a78bfa] uppercase tracking-[0.14em]">
+                                        <Icon icon="fluent:crown-24-filled" className="w-3 h-3" />
+                                        Owner
+                                    </span>
+                                );
+                            }
+                            if (reviewerSet.includes(viewer)) {
+                                return (
+                                    <span className="inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 rounded-full bg-[#06b6d4]/10 border border-[#06b6d4]/25 text-[10px] font-medium text-[#06b6d4] uppercase tracking-[0.14em]">
+                                        <Icon icon="fluent:people-team-24-regular" className="w-3 h-3" />
+                                        Reviewer
+                                    </span>
+                                );
+                            }
+                            return null;
+                        })()}
                         <p className="text-[11px] text-[color:var(--text-soft)] mt-3 font-mono truncate">
                             {formId}
                         </p>

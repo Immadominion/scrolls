@@ -14,8 +14,6 @@ import { useScrollsAccount, useScrollsDAppKit } from "@/lib/useScrollsAccount";
 import { hasOnchainRegistry, hasSeal } from "@/lib/contracts";
 import { publishForm, createPolicy } from "@/lib/registry";
 import {
-    generateFormKeypair,
-    storeFormPrivateKey,
     buildKeyBackup,
     removeFormPrivateKey,
     type FormKeypair,
@@ -371,27 +369,26 @@ export default function PublishModal({
                 updatedAt: new Date().toISOString(),
             };
 
-            // Step 0 (private only): provision encryption material.
-            //   Preferred path (Seal): create the on-chain `FormPolicy`
-            //     so respondents encrypt to it and admins can be added
-            //     later without redeploying the form.
-            //   Fallback (legacy): generate an in-browser ECDH keypair
-            //     when Seal/registry isn't available on this network.
-            let generatedKp: FormKeypair | null = null;
+            // Step 0 (private only): provision Seal policy.
+            // Hard requirement: Seal must be wired on the active network.
+            // No silent ECIES fallback — if the user toggled "private"
+            // on a network without Seal, the UI should have prevented it;
+            // we double-check here and abort with a clear message.
             if (draftWithOwner.settings.isPrivate) {
-                const useSeal = !!(account?.address && dAppKit && hasOnchainRegistry() && hasSeal());
-                if (useSeal && dAppKit && account?.address) {
-                    setStep("policy");
-                    const { policyId } = await createPolicy(dAppKit);
-                    draftWithOwner = { ...draftWithOwner, policyId };
-                } else {
-                    setStep("keygen");
-                    generatedKp = await generateFormKeypair();
-                    draftWithOwner = {
-                        ...draftWithOwner,
-                        encryptionPublicKey: generatedKp.publicKeyJwk,
-                    };
+                if (!hasSeal() || !hasOnchainRegistry()) {
+                    throw new Error(
+                        "Private (encrypted) forms aren't available on this network yet. " +
+                        "Turn off the Private toggle in form settings to publish a public form.",
+                    );
                 }
+                if (!account?.address || !dAppKit) {
+                    throw new Error(
+                        "Connect your Sui wallet to publish a private form \u2014 it needs a signature to create the on-chain policy.",
+                    );
+                }
+                setStep("policy");
+                const { policyId } = await createPolicy(dAppKit);
+                draftWithOwner = { ...draftWithOwner, policyId };
             }
 
             // Step 1: Upload FormConfig JSON to Walrus.
@@ -439,14 +436,6 @@ export default function PublishModal({
             // Remove the local draft now that it's published on Walrus
             if (localDraftId) {
                 removeDraft(localDraftId);
-            }
-
-            // Persist the decryption key locally, keyed to the canonical
-            // form id (pointer id when on chain, else blob id) so the
-            // responses page can find it from the share URL.
-            if (generatedKp) {
-                storeFormPrivateKey(final.id, generatedKp.privateKeyJwk);
-                setKeypair(generatedKp);
             }
 
             setPublishedConfig(final);

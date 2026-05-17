@@ -19,6 +19,9 @@ interface BuilderHeaderProps {
     onOpenLibrary: () => void;
     settings: FormConfig["settings"];
     onUpdateSettings: (updates: Partial<FormConfig["settings"]>) => void;
+    admins?: string[];
+    onUpdateAdmins?: (admins: string[]) => void;
+    ownerAddress?: string;
 }
 
 export default function BuilderHeader({
@@ -32,6 +35,9 @@ export default function BuilderHeader({
     onOpenLibrary,
     settings,
     onUpdateSettings,
+    admins,
+    onUpdateAdmins,
+    ownerAddress,
 }: BuilderHeaderProps) {
     return (
         <header className="relative h-14 flex items-center px-3 sm:px-4 gap-2 sm:gap-3 shrink-0 bg-[color:var(--background-app)] z-30">
@@ -164,7 +170,13 @@ export default function BuilderHeader({
             {/* Settings menu — pinned to the far edge while editing */}
             {!isPreview && (
                 <div className="shrink-0">
-                    <FormSettingsMenu settings={settings} onUpdate={onUpdateSettings} />
+                    <FormSettingsMenu
+                        settings={settings}
+                        onUpdate={onUpdateSettings}
+                        admins={admins}
+                        onUpdateAdmins={onUpdateAdmins}
+                        ownerAddress={ownerAddress}
+                    />
                 </div>
             )}
 
