@@ -15,6 +15,9 @@
 // ─────────────────────────────────────────────────────────────────────
 
 import { verifyPersonalMessageSignature } from "@mysten/sui/verify";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
+import { Transaction } from "@mysten/sui/transactions";
 
 interface Env {
     ANTHROPIC_API_KEY: string;
@@ -26,6 +29,11 @@ interface Env {
     LINKS: KVNamespace;
     /** Comma-separated list of origins permitted to host the short-link target. */
     SHORT_LINK_ALLOWED_TARGETS?: string;
+    /** Bech32 (suiprivkey1…) secret for the relay account that sponsors
+     *  on-chain submission anchoring for wallet-less respondents. */
+    RELAY_PRIVATE_KEY?: string;
+    /** Move package id on Sui mainnet (form_pointer / submission_ref). */
+    SCROLLS_PACKAGE_MAINNET?: string;
 }
 
 const ALLOWED_MODEL = "claude-haiku-4-5-20251001";
@@ -121,6 +129,10 @@ export default {
 
         if (url.pathname === "/analyze") {
             return handleAnalyze(request, env, corsOrigin);
+        }
+
+        if (url.pathname === "/record") {
+            return handleRecordSubmission(request, env, corsOrigin);
         }
 
         if (url.pathname !== "/") {
@@ -811,4 +823,123 @@ function parseSignedFields(message: string): SignedFields {
         }
     }
     return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Submission relay
+//
+// Wallet-less respondents upload their submission JSON directly to
+// Walrus (no auth needed for the public publisher), then POST the
+// resulting blob id + the form's on-chain pointer id here. The worker
+// signs `submission_ref::record(pointerId, blobIdBytes, clock)` using
+// a dedicated hot keypair so the owner's dashboard can discover the
+// submission via the standard `SubmissionRecorded` event.
+//
+// The relay never sees the submission contents. It only ever sees:
+//   { pointerId, blobId }
+// — both are pseudonymous identifiers already public on Walrus.
+//
+// Hardening:
+//   • CORS origin allow-list (shared with other routes)
+//   • Per-IP rate limit (shared bucket)
+//   • Strict input shape + length checks
+//   • pointerId must look like a Sui object id (0x + 1..64 hex)
+//   • blobId capped at 256 chars (Walrus base64url ids are ~44)
+// ─────────────────────────────────────────────────────────────────────
+
+const SUI_MAINNET_RPC = "https://fullnode.mainnet.sui.io:443";
+
+let _relayKeypair: Ed25519Keypair | null = null;
+function getRelayKeypair(env: Env): Ed25519Keypair {
+    if (_relayKeypair) return _relayKeypair;
+    if (!env.RELAY_PRIVATE_KEY) {
+        throw new Error("RELAY_PRIVATE_KEY secret not configured");
+    }
+    _relayKeypair = Ed25519Keypair.fromSecretKey(env.RELAY_PRIVATE_KEY);
+    return _relayKeypair;
+}
+
+let _suiClient: SuiJsonRpcClient | null = null;
+function getSuiClient(): SuiJsonRpcClient {
+    if (!_suiClient) {
+        _suiClient = new SuiJsonRpcClient({ url: SUI_MAINNET_RPC, network: "mainnet" });
+    }
+    return _suiClient;
+}
+
+interface RecordRequest {
+    pointerId?: unknown;
+    blobId?: unknown;
+}
+
+async function handleRecordSubmission(
+    request: Request,
+    env: Env,
+    corsOrigin: string,
+): Promise<Response> {
+    const pkg = env.SCROLLS_PACKAGE_MAINNET;
+    if (!pkg) {
+        return json(
+            { error: "SCROLLS_PACKAGE_MAINNET is not configured." },
+            501,
+            corsOrigin,
+        );
+    }
+    if (!env.RELAY_PRIVATE_KEY) {
+        return json(
+            { error: "Submission relay is not configured." },
+            501,
+            corsOrigin,
+        );
+    }
+
+    const contentLength = parseInt(request.headers.get("Content-Length") ?? "0", 10);
+    if (contentLength > 4096) {
+        return json({ error: "Request body too large." }, 413, corsOrigin);
+    }
+
+    let body: RecordRequest;
+    try {
+        body = (await request.json()) as RecordRequest;
+    } catch {
+        return json({ error: "Invalid JSON body" }, 400, corsOrigin);
+    }
+
+    const pointerId = typeof body.pointerId === "string" ? body.pointerId.trim() : "";
+    const blobId = typeof body.blobId === "string" ? body.blobId.trim() : "";
+
+    if (!/^0x[0-9a-fA-F]{1,64}$/.test(pointerId)) {
+        return json({ error: "pointerId must be a 0x-prefixed Sui object id" }, 400, corsOrigin);
+    }
+    if (!blobId || blobId.length > 256 || !/^[A-Za-z0-9_\-]+$/.test(blobId)) {
+        return json({ error: "blobId must be a Walrus blob id (base64url, <=256 chars)" }, 400, corsOrigin);
+    }
+
+    try {
+        const keypair = getRelayKeypair(env);
+        const client = getSuiClient();
+        const tx = new Transaction();
+        tx.moveCall({
+            target: `${pkg}::submission_ref::record`,
+            arguments: [
+                tx.object(pointerId),
+                tx.pure.vector("u8", Array.from(new TextEncoder().encode(blobId))),
+                tx.object("0x6"),
+            ],
+        });
+        const res = await client.signAndExecuteTransaction({
+            signer: keypair,
+            transaction: tx,
+            options: { showEffects: true },
+        });
+        const status = res.effects?.status?.status;
+        if (status !== "success") {
+            const err = res.effects?.status?.error ?? "unknown failure";
+            return json({ error: `On-chain record failed: ${err}` }, 502, corsOrigin);
+        }
+        return json({ digest: res.digest, sponsoredBy: keypair.getPublicKey().toSuiAddress() }, 200, corsOrigin);
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return json({ error: `Relay error: ${msg}` }, 500, corsOrigin);
+    }
 }

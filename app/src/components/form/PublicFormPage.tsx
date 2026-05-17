@@ -14,9 +14,10 @@ import { addSubmission } from "@/lib/submissionIndex";
 import { getFormPointer, isPointerId, recordSubmission } from "@/lib/registry";
 import { hasOnchainRegistry } from "@/lib/contracts";
 import { DotLottieReact, setWasmUrl } from "@lottiefiles/dotlottie-react";
-import { useScrollsAccount, useScrollsDAppKit } from "@/lib/useScrollsAccount";
+import { useScrollsAccount, useScrollsDAppKit, useScrollsWallets } from "@/lib/useScrollsAccount";
 import { buildSignedMessage, digestSubmission } from "@/lib/submissionAuth";
 import ScrollsLogo from "@/components/brand/ScrollsLogo";
+import WalletButton from "@/components/wallet/WalletButton";
 import RichTextEditor from "@/components/form/RichTextEditor";
 import MouseGlow from "@/components/ui/MouseGlow";
 import DotGrid from "@/components/ui/DotGrid";
@@ -496,6 +497,7 @@ function FormContent() {
 
     const account = useScrollsAccount();
     const dAppKit = useScrollsDAppKit();
+    const wallets = useScrollsWallets();
     const [signWithWallet, setSignWithWallet] = useState(true);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -599,6 +601,34 @@ function FormContent() {
                 } catch (recErr) {
                     if (process.env.NODE_ENV === "development") {
                         console.warn("[PublicFormPage] recordSubmission failed:", recErr);
+                    }
+                }
+            } else if (formConfig.pointerId && hasOnchainRegistry()) {
+                // Wallet-less respondent: ask the worker relay to anchor
+                // the submission on-chain so the owner's dashboard can
+                // count it from any device. Fire-and-forget — never
+                // block the submitter on this.
+                const relayBase =
+                    process.env.NEXT_PUBLIC_AI_PROXY_URL ??
+                    process.env.NEXT_PUBLIC_CLAUDE_PROXY_URL ??
+                    "";
+                if (relayBase) {
+                    try {
+                        await fetch(`${relayBase.replace(/\/$/, "")}/record`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                pointerId: formConfig.pointerId,
+                                blobId,
+                            }),
+                        });
+                    } catch (relayErr) {
+                        if (process.env.NODE_ENV === "development") {
+                            console.warn(
+                                "[PublicFormPage] relay record failed:",
+                                relayErr,
+                            );
+                        }
                     }
                 }
             }
@@ -732,6 +762,14 @@ function FormContent() {
                             <Icon icon="fluent:lock-closed-12-regular" className="w-3 h-3" />
                             Encrypted
                         </span>
+                    )}
+                    {/* Connect pill — only renders when a wallet provider
+                        is available (extension installed or Slush/Suiet
+                        in-app browser). Wallet-less visitors see nothing. */}
+                    {wallets.length > 0 && (
+                        <div className="ml-auto">
+                            <WalletButton />
+                        </div>
                     )}
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-display font-bold text-[color:var(--text-primary)] mb-3 tracking-tight leading-[1.1]">

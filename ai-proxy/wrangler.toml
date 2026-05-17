@@ -4,9 +4,10 @@ compatibility_date = "2025-05-01"
 
 # Public, non-secret config. Add your prod + local origins here.
 [vars]
-ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,https://scrolls.fun,https://www.scrolls.fun,https://scrolls-tau.vercel.app"
+ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,https://scrolls.fun,https://www.scrolls.fun,https://scrolls-tau.vercel.app,https://scrolls.wal.app"
 RATE_LIMIT_PER_WINDOW = "60"
 RATE_LIMIT_WINDOW_SECONDS = "600"
+SCROLLS_PACKAGE_MAINNET = "0xbd376f7ee099f1b91b52c00dc4f5b3f8535bffd02b44baa2f9aba225abe64d95"
 
 # Created with: wrangler kv namespace create RATE_LIMIT
 # Replace the placeholder id below with the value wrangler prints.

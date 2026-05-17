@@ -15,7 +15,7 @@ export type ScrollsNetwork = typeof SCROLLS_NETWORK;
 export const SCROLLS_PACKAGES: Record<ScrollsNetwork, string> = {
     devnet: "",
     testnet: "0x6418bc0c11e75ef443f7e8fedb9a860b6cc3bfe5909481dc309472ad8b7b10a0",
-    mainnet: "",
+    mainnet: "0xbd376f7ee099f1b91b52c00dc4f5b3f8535bffd02b44baa2f9aba225abe64d95",
 };
 
 /** Seal verifier package addresses (from Mysten Labs). */
