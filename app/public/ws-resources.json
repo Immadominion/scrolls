@@ -1,15 +1,15 @@
 {
-  "object_id": "0xbd5ba26749942b0085d93c5d1da1634fb3b79778f37e237f87c8bc3782a1b14b",
-  "routes": {
-    "/builder": "/builder/index.html",
-    "/builder/*": "/builder/index.html",
-    "/docs": "/docs/index.html",
-    "/docs/*": "/docs/index.html",
-    "/dashboard": "/dashboard/index.html",
-    "/dashboard/*": "/dashboard/index.html",
-    "/f": "/f/index.html",
-    "/f/*": "/f/index.html",
-    "/responses": "/responses/index.html",
-    "/responses/*": "/responses/index.html"
-  }
+    "object_id": "0xbd5ba26749942b0085d93c5d1da1634fb3b79778f37e237f87c8bc3782a1b14b",
+    "routes": {
+        "/builder": "/builder/index.html",
+        "/builder/*": "/builder/index.html",
+        "/docs": "/docs/index.html",
+        "/docs/*": "/docs/index.html",
+        "/dashboard": "/dashboard/index.html",
+        "/dashboard/*": "/dashboard/index.html",
+        "/f": "/f/index.html",
+        "/f/*": "/f/index.html",
+        "/responses": "/responses/index.html",
+        "/responses/*": "/responses/index.html"
+    }
 }

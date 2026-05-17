@@ -107,6 +107,7 @@ export default function BuilderLayout() {
     const [aiAttachments, setAiAttachments] = useState<File[]>([]);
     const [aiInputReady, setAiInputReady] = useState(!isAiMode || !aiDraftId);
     const [aiError, setAiError] = useState<string | null>(null);
+    const [aiRetryCount, setAiRetryCount] = useState(0);
     const [editLoadState, setEditLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
     const [editLoadError, setEditLoadError] = useState<string | null>(null);
     const aiRanRef = useRef(false);
@@ -176,7 +177,10 @@ export default function BuilderLayout() {
 
         if (!aiDraftId) {
             setAiPrompt(aiPromptParam);
-            setAiAttachments([]);
+            // Do NOT call setAiAttachments([]) here — it creates a new array
+            // reference which cancels & prevents the generation effect below.
+            // The initial state is already [] so this would be a no-op in
+            // value but a breaking change in identity.
             setAiInputReady(true);
             return;
         }
@@ -250,7 +254,7 @@ export default function BuilderLayout() {
         return () => {
             cancelled = true;
         };
-    }, [isAiMode, aiInputReady, aiPrompt, aiAttachments]);
+    }, [isAiMode, aiInputReady, aiPrompt, aiAttachments, aiRetryCount]);
 
     // ── Field Operations ──────────────────────────────────────────────────
 
@@ -428,7 +432,23 @@ export default function BuilderLayout() {
                                         {aiStatus === "idle" && !aiInputReady && "Loading AI draft..."}
                                         {aiStatus === "generating" && "Claude Haiku is drafting your form…"}
                                         {aiStatus === "ready" && aiSource === "claude-haiku" && "Draft ready. Refine fields, then publish."}
-                                        {aiStatus === "error" && `Generation failed: ${aiError ?? "unknown error"}`}
+                                        {aiStatus === "error" && (
+                                            <span className="flex items-center gap-2">
+                                                <span>{`Generation failed: ${aiError ?? "unknown error"}`}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        aiRanRef.current = false;
+                                                        setAiStatus("idle");
+                                                        setAiError(null);
+                                                        setAiRetryCount((c) => c + 1);
+                                                    }}
+                                                    className="underline underline-offset-2 hover:text-[#a78bfa] transition-colors"
+                                                >
+                                                    Retry
+                                                </button>
+                                            </span>
+                                        )}
                                         {aiStatus === "idle" && aiInputReady && "Brief loaded. Generation will start shortly."}
                                     </span>
                                 </div>
