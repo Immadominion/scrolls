@@ -356,6 +356,11 @@ export default function PublishModal({
     const [errorMessage, setErrorMessage] = useState("");
     const [publishedConfig, setPublishedConfig] = useState<FormConfig | null>(null);
     const [keypair, setKeypair] = useState<FormKeypair | null>(null);
+    // If the Walrus upload succeeded but the on-chain registration was
+    // rejected/failed, we remember the uploaded blob so retry can re-attempt
+    // only the registry step instead of re-paying for another upload.
+    const [pendingBlobId, setPendingBlobId] = useState<string | null>(null);
+    const [pendingDraft, setPendingDraft] = useState<FormConfig | null>(null);
     const account = useScrollsAccount();
     const dAppKit = useScrollsDAppKit();
 
@@ -363,11 +368,17 @@ export default function PublishModal({
         setIsPublishing(true);
         try {
             const ownerAddress = account?.address ?? formConfig.ownerAddress ?? "";
-            let draftWithOwner: FormConfig = {
-                ...formConfig,
-                ownerAddress,
-                updatedAt: new Date().toISOString(),
-            };
+            // Smart retry: if a previous attempt got past Walrus upload and
+            // only the on-chain step failed, reuse the existing blob so the
+            // user doesn't pay for a second upload.
+            const reuseBlob = pendingBlobId && pendingDraft;
+            let draftWithOwner: FormConfig = reuseBlob
+                ? pendingDraft!
+                : {
+                    ...formConfig,
+                    ownerAddress,
+                    updatedAt: new Date().toISOString(),
+                };
 
             // Step 0 (private only): provision Seal policy.
             // Hard requirement: Seal must be wired on the active network.
@@ -394,8 +405,14 @@ export default function PublishModal({
             // Step 1: Upload FormConfig JSON to Walrus.
             // The blob ID becomes the canonical form ID — anyone with the
             // share link can fetch the form definition directly.
-            setStep("uploading");
-            const blobId = await uploadJSON(draftWithOwner);
+            // Skip if we're retrying after an on-chain rejection.
+            let blobId: string;
+            if (reuseBlob) {
+                blobId = pendingBlobId!;
+            } else {
+                setStep("uploading");
+                blobId = await uploadJSON(draftWithOwner);
+            }
 
             // Step 2 (best-effort): register the form on chain so it shows
             // up on the owner's dashboard from any device and so submissions
@@ -408,8 +425,19 @@ export default function PublishModal({
                     pointerId = out.pointerId;
                 } catch (regErr) {
                     if (process.env.NODE_ENV === "development") {
-                        console.warn("[PublishModal] on-chain register failed, falling back to local-only:", regErr);
+                        console.warn("[PublishModal] on-chain register failed:", regErr);
                     }
+                    // Remember the uploaded blob so the user can retry the
+                    // on-chain step without paying for another Walrus upload.
+                    setPendingBlobId(blobId);
+                    setPendingDraft(draftWithOwner);
+                    const raw = regErr instanceof Error ? regErr.message : String(regErr);
+                    const rejected = /reject|denied|cancell?ed|user denied|user reject/i.test(raw);
+                    throw new Error(
+                        rejected
+                            ? "You rejected the wallet signature. The form was uploaded to Walrus, but on-chain registration was skipped \u2014 it won't sync across devices yet. Retry to sign again without re-uploading."
+                            : `On-chain registration failed: ${raw}. The form blob is on Walrus; retry to re-attempt the on-chain sync.`,
+                    );
                 }
             }
 
@@ -439,6 +467,9 @@ export default function PublishModal({
             }
 
             setPublishedConfig(final);
+            // Successful end-to-end publish: clear any stale pending blob.
+            setPendingBlobId(null);
+            setPendingDraft(null);
             setStep("done");
             onPublished(final);
         } catch (err) {
