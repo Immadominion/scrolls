@@ -99,16 +99,25 @@ export default function DashboardPage() {
                 const shared = await getFormsSharedWithMe(account.address);
                 if (cancelled) return;
                 if (onchain.length === 0 && shared.length === 0) return;
-                const known = new Set(
-                    listForms(account.address).map((f) => f.formId),
-                );
+                const localForms = listForms(account.address);
+                const known = new Set(localForms.map((f) => f.formId));
                 let added = 0;
                 // Owned: fetch each Walrus blob in parallel so the
                 // dashboard shows the real title / field count / privacy
                 // flag, not a placeholder. Same origin or different
                 // origin (scrolls.fun vs *.wal.app) no longer matters —
                 // truth lives on-chain + Walrus.
+                // Also refresh any known forms that still have a stale
+                // "Untitled form" / "On-chain form" placeholder — this
+                // happens when a form was adopted before the Walrus fetch
+                // was added (old sessions on the same origin).
+                const STALE_TITLES = new Set(["Untitled form", "On-chain form"]);
                 const ownedNew = onchain.filter((f) => !known.has(f.pointerId));
+                const ownedStale = onchain.filter((f) => {
+                    if (!known.has(f.pointerId)) return false;
+                    const entry = localForms.find((lf) => lf.formId === f.pointerId);
+                    return entry ? STALE_TITLES.has(entry.title) : false;
+                });
                 const ownedEnriched = await Promise.all(
                     ownedNew.map(async (f) => {
                         try {
@@ -130,6 +139,34 @@ export default function DashboardPage() {
                     });
                     added += 1;
                 }
+
+                // Background-refresh stale placeholder titles.
+                // Fire-and-forget: failures are silently ignored.
+                if (ownedStale.length > 0) {
+                    Promise.all(
+                        ownedStale.map(async (f) => {
+                            try {
+                                const cfg = await fetchJSON<FormConfig>(f.blobId);
+                                if (cancelled) return;
+                                const realTitle = cfg?.title;
+                                if (realTitle && !STALE_TITLES.has(realTitle)) {
+                                    addForm(account.address!, {
+                                        formId: f.pointerId,
+                                        title: realTitle,
+                                        createdAt: new Date(f.createdAtMs).toISOString(),
+                                        fieldCount: Array.isArray(cfg.fields) ? cfg.fields.length : 0,
+                                        isPrivate: !!cfg.settings?.isPrivate,
+                                    });
+                                }
+                            } catch {
+                                // ignore — stale title stays until next visit
+                            }
+                        }),
+                    ).then(() => {
+                        if (!cancelled) setRefreshTick((t) => t + 1);
+                    });
+                }
+
                 for (const f of shared) {
                     if (known.has(f.pointerId)) continue;
                     addForm(account.address, {

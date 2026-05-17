@@ -7,6 +7,7 @@ import { Star } from "lucide-react";
 import clsx from "clsx";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Linkified } from "@/lib/linkify";
+import { truncateAddress } from "@/lib/sui";
 import type { FormConfig, FormField } from "@/types";
 
 // ── Field Renderers ────────────────────────────────────────────────────────
@@ -218,6 +219,154 @@ function FieldWrapper({ field, index }: { field: FormField; index: number }) {
     );
 }
 
+// ── DetailsPanel ──────────────────────────────────────────────────────────
+
+function DetailRow({
+    icon,
+    label,
+    value,
+    muted,
+}: {
+    icon: string;
+    label: string;
+    value: string;
+    muted?: boolean;
+}) {
+    return (
+        <div className="flex items-start gap-3">
+            <div className="mt-0.5 w-6 h-6 rounded-lg bg-[color:var(--surface-solid)] border border-[color:var(--border-subtle)] flex items-center justify-center shrink-0">
+                <Icon icon={icon} className="w-3.5 h-3.5 text-[color:var(--text-muted)]" />
+            </div>
+            <div className="min-w-0">
+                <p className="text-[11px] uppercase tracking-widest text-[color:var(--text-muted)] mb-0.5">{label}</p>
+                <p className={clsx("text-sm break-all", muted ? "text-[color:var(--text-muted)] italic" : "text-[color:var(--text-primary)]")}>
+                    {value}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function AddressChip({ address, label }: { address: string; label?: string }) {
+    return (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[color:var(--surface-solid)] border border-[color:var(--border-subtle)]">
+            <div className="w-2 h-2 rounded-full bg-[#a78bfa] shrink-0" />
+            <span className="font-mono text-xs text-[color:var(--text-primary)]">{truncateAddress(address)}</span>
+            {label && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[color:var(--background-subtle)] text-[color:var(--text-muted)]">
+                    {label}
+                </span>
+            )}
+        </div>
+    );
+}
+
+function DetailsPanel({ formConfig }: { formConfig: FormConfig }) {
+    const { settings, ownerAddress, admins } = formConfig;
+    const allViewers = [
+        { address: ownerAddress, label: "Owner" },
+        ...(admins ?? []).filter(Boolean).map((a) => ({ address: a, label: "Admin" })),
+    ];
+
+    return (
+        <div className="max-w-xl mx-auto px-6 py-8 space-y-8">
+            {/* Banner */}
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#a78bfa]/8 border border-[#a78bfa]/20 text-[11px] text-[#a78bfa]">
+                <Icon icon="fluent:eye-off-24-regular" className="w-4 h-4 shrink-0" />
+                <span>This info is visible to you (the creator) only — respondents never see it.</span>
+            </div>
+
+            {/* Visibility */}
+            <section>
+                <p className="text-xs font-semibold text-[color:var(--text-secondary)] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <Icon icon="fluent:people-24-regular" className="w-3.5 h-3.5" />
+                    Who can see responses
+                </p>
+                <div className="space-y-2">
+                    {allViewers.length > 0 ? (
+                        allViewers.map(({ address, label }) =>
+                            address ? (
+                                <AddressChip key={address} address={address} label={label} />
+                            ) : null,
+                        )
+                    ) : (
+                        <p className="text-sm text-[color:var(--text-muted)] italic">No owner set — publish to assign.</p>
+                    )}
+                    {(admins ?? []).length === 0 && ownerAddress && (
+                        <p className="text-xs text-[color:var(--text-muted)] mt-1">
+                            No extra admins. Add them in Settings → Admins.
+                        </p>
+                    )}
+                </div>
+            </section>
+
+            {/* Response settings */}
+            <section>
+                <p className="text-xs font-semibold text-[color:var(--text-secondary)] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <Icon icon="fluent:settings-24-regular" className="w-3.5 h-3.5" />
+                    Response settings
+                </p>
+                <div className="space-y-4">
+                    <DetailRow
+                        icon="fluent:lock-24-regular"
+                        label="Privacy"
+                        value={settings.isPrivate ? "End-to-end encrypted" : "Public — responses are readable by anyone with the blob ID"}
+                    />
+                    <DetailRow
+                        icon="fluent:person-24-regular"
+                        label="Respondents"
+                        value={settings.allowAnonymous ? "Anyone — no wallet required" : "Wallet required"}
+                    />
+                    {settings.maxResponses != null && (
+                        <DetailRow
+                            icon="fluent:number-symbol-24-regular"
+                            label="Response cap"
+                            value={`${settings.maxResponses} responses`}
+                        />
+                    )}
+                    {settings.closesAt && (
+                        <DetailRow
+                            icon="fluent:calendar-24-regular"
+                            label="Closes at"
+                            value={new Date(settings.closesAt).toLocaleString()}
+                        />
+                    )}
+                </div>
+            </section>
+
+            {/* After submit */}
+            <section>
+                <p className="text-xs font-semibold text-[color:var(--text-secondary)] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                    <Icon icon="fluent:checkmark-circle-24-regular" className="w-3.5 h-3.5" />
+                    After submit
+                </p>
+                <div className="space-y-4">
+                    <DetailRow
+                        icon="fluent:chat-24-regular"
+                        label="Confirmation message"
+                        value={settings.confirmationMessage || "Your response is stored permanently on Walrus."}
+                        muted={!settings.confirmationMessage}
+                    />
+                    {settings.postSubmitNote ? (
+                        <DetailRow
+                            icon="fluent:note-24-regular"
+                            label="Creator note"
+                            value={settings.postSubmitNote}
+                        />
+                    ) : (
+                        <DetailRow
+                            icon="fluent:note-24-regular"
+                            label="Creator note"
+                            value="Not set — add one in Settings → After submit"
+                            muted
+                        />
+                    )}
+                </div>
+            </section>
+        </div>
+    );
+}
+
 // ── FormPreview ────────────────────────────────────────────────────────────
 
 interface FormPreviewProps {
@@ -226,6 +375,7 @@ interface FormPreviewProps {
 
 export default function FormPreview({ formConfig }: FormPreviewProps) {
     const [submitted, setSubmitted] = useState(false);
+    const [tab, setTab] = useState<"form" | "details">("form");
 
     if (submitted) {
         return (
@@ -275,6 +425,42 @@ export default function FormPreview({ formConfig }: FormPreviewProps) {
     }
 
     return (
+        <div className="flex flex-col h-full">
+            {/* Tab bar — sticky at the top of the preview pane */}
+            <div className="sticky top-0 z-10 flex items-center gap-1 px-4 py-2.5 bg-[color:var(--background-app)] border-b border-[color:var(--border-subtle)] shrink-0">
+                <button
+                    type="button"
+                    onClick={() => setTab("form")}
+                    className={clsx(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150",
+                        tab === "form"
+                            ? "bg-[color:var(--surface-solid)] text-[color:var(--text-primary)] border border-[color:var(--border-default)]"
+                            : "text-[color:var(--text-muted)] hover:text-[color:var(--text-secondary)]",
+                    )}
+                >
+                    <Icon icon="fluent:form-24-regular" className="w-3.5 h-3.5" />
+                    Form preview
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setTab("details")}
+                    className={clsx(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150",
+                        tab === "details"
+                            ? "bg-[color:var(--surface-solid)] text-[color:var(--text-primary)] border border-[color:var(--border-default)]"
+                            : "text-[color:var(--text-muted)] hover:text-[color:var(--text-secondary)]",
+                    )}
+                >
+                    <Icon icon="fluent:info-24-regular" className="w-3.5 h-3.5" />
+                    Details
+                </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto">
+                {tab === "details" ? (
+                    <DetailsPanel formConfig={formConfig} />
+                ) : (
         <div className="max-w-xl mx-auto px-6 py-12">
             {/* Form header */}
             <motion.div
@@ -333,6 +519,9 @@ export default function FormPreview({ formConfig }: FormPreviewProps) {
                     </motion.div>
                 </div>
             )}
+        </div>
+                )}
+            </div>
         </div>
     );
 }
