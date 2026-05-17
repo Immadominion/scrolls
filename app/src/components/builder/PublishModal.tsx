@@ -299,12 +299,21 @@ function DoneStep({
                 </div>
             )}
 
-            <button
-                onClick={onClose}
-                className="w-full py-2.5 border border-[color:var(--border-subtle)] rounded-xl text-sm text-[color:var(--text-secondary)] hover:border-[color:var(--border-strong)] hover:text-[color:var(--text-primary)] transition-colors"
-            >
-                Done
-            </button>
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={onClose}
+                    className="flex-1 py-2.5 border border-[color:var(--border-subtle)] rounded-xl text-sm text-[color:var(--text-secondary)] hover:border-[color:var(--border-strong)] hover:text-[color:var(--text-primary)] transition-colors"
+                >
+                    Stay here
+                </button>
+                <a
+                    href="/dashboard"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[color:var(--surface-solid)] border border-[color:var(--border-subtle)] text-sm font-semibold text-[color:var(--text-primary)] hover:border-[#a78bfa] hover:text-[#a78bfa] transition-colors"
+                >
+                    <Icon icon="fluent:grid-24-regular" className="w-4 h-4" />
+                    Dashboard
+                </a>
+            </div>
 
             <AnimatePresence>
                 {shareOpen && (

@@ -60,6 +60,18 @@ export default function BuilderHeader({
                 /
             </span>
 
+            {/* Dashboard breadcrumb */}
+            <a
+                href="/dashboard"
+                className="text-sm text-[color:var(--text-muted)] hover:text-[color:var(--text-primary)] transition-colors duration-150 shrink-0 hidden sm:block"
+            >
+                Dashboard
+            </a>
+
+            <span className="text-[color:var(--text-muted)] text-base select-none hidden sm:block" aria-hidden="true">
+                /
+            </span>
+
             {/* Form title — inline editable */}
             <div className="relative flex items-center">
                 <input
