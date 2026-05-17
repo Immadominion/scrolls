@@ -872,6 +872,24 @@ interface RecordRequest {
     blobId?: unknown;
 }
 
+// In-memory mutex for the relay's `signAndExecute` calls. Two concurrent
+// submissions from different respondents would otherwise both try to lock
+// the same gas coin owned by the single relay keypair and the second one
+// would fail with an equivocation / object-version error. Serializing per
+// isolate prevents that. (Cloudflare may spin up multiple isolates, in
+// which case the kept-warm one usually serves most traffic — the failure
+// mode under cross-isolate races is the same equivocation that's already
+// being caught + surfaced below.)
+let _relayChain: Promise<unknown> = Promise.resolve();
+function queueRelay<T>(fn: () => Promise<T>): Promise<T> {
+    const next = _relayChain.then(fn, fn);
+    // Swallow errors on the chain itself so one failure doesn't poison
+    // every subsequent caller; each `next` still rejects with the real
+    // error to its own caller.
+    _relayChain = next.catch(() => undefined);
+    return next;
+}
+
 async function handleRecordSubmission(
     request: Request,
     env: Env,
@@ -918,19 +936,45 @@ async function handleRecordSubmission(
     try {
         const keypair = getRelayKeypair(env);
         const client = getSuiClient();
-        const tx = new Transaction();
-        tx.moveCall({
-            target: `${pkg}::submission_ref::record`,
-            arguments: [
-                tx.object(pointerId),
-                tx.pure.vector("u8", Array.from(new TextEncoder().encode(blobId))),
-                tx.object("0x6"),
-            ],
-        });
-        const res = await client.signAndExecuteTransaction({
-            signer: keypair,
-            transaction: tx,
-            options: { showEffects: true },
+        // Serialize relay sign+execute so concurrent submissions don't
+        // equivocate on the relay's single gas coin.
+        const res = await queueRelay(async () => {
+            const tx = new Transaction();
+            tx.moveCall({
+                target: `${pkg}::submission_ref::record`,
+                arguments: [
+                    tx.object(pointerId),
+                    tx.pure.vector("u8", Array.from(new TextEncoder().encode(blobId))),
+                    tx.object("0x6"),
+                ],
+            });
+            // Try once; on a transient gas/version conflict, refetch the
+            // latest reference set and retry exactly once.
+            try {
+                return await client.signAndExecuteTransaction({
+                    signer: keypair,
+                    transaction: tx,
+                    options: { showEffects: true },
+                });
+            } catch (innerErr) {
+                const m = innerErr instanceof Error ? innerErr.message : String(innerErr);
+                const transient = /equivocat|ObjectVersionUnavailable|reservation|locked|conflict/i.test(m);
+                if (!transient) throw innerErr;
+                const tx2 = new Transaction();
+                tx2.moveCall({
+                    target: `${pkg}::submission_ref::record`,
+                    arguments: [
+                        tx2.object(pointerId),
+                        tx2.pure.vector("u8", Array.from(new TextEncoder().encode(blobId))),
+                        tx2.object("0x6"),
+                    ],
+                });
+                return await client.signAndExecuteTransaction({
+                    signer: keypair,
+                    transaction: tx2,
+                    options: { showEffects: true },
+                });
+            }
         });
         const status = res.effects?.status?.status;
         if (status !== "success") {

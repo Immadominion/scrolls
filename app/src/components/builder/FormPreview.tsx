@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { Star } from "lucide-react";
 import clsx from "clsx";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { Linkified } from "@/lib/linkify";
 import type { FormConfig, FormField } from "@/types";
 
 // ── Field Renderers ────────────────────────────────────────────────────────
@@ -227,27 +229,46 @@ export default function FormPreview({ formConfig }: FormPreviewProps) {
 
     if (submitted) {
         return (
-            <div className="flex flex-col items-center justify-center h-full py-24">
+            <div className="flex flex-col items-center justify-center h-full py-16">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.4, ease: [0.25, 0.4, 0.25, 1] }}
-                    className="text-center space-y-4"
+                    className="flex flex-col items-center gap-5 max-w-sm text-center px-6"
                 >
-                    <div className="w-16 h-16 rounded-2xl bg-[#a78bfa]/10 border border-[#a78bfa]/20 flex items-center justify-center mx-auto">
-                        <Icon icon="fluent:checkmark-24-filled" className="w-8 h-8 text-[#a78bfa]" />
+                    <div className="w-32 h-32 flex items-center justify-center">
+                        <DotLottieReact
+                            src="/high-five.lottie"
+                            autoplay
+                            loop={false}
+                            className="w-full h-full"
+                        />
                     </div>
-                    <h2 className="text-2xl font-display font-bold text-[color:var(--text-primary)]">Thank you!</h2>
-                    <p className="text-[color:var(--text-secondary)] text-sm max-w-xs">
-                        {formConfig.settings.confirmationMessage ??
-                            "Your response has been submitted and stored permanently on Walrus."}
-                    </p>
+                    <div className="space-y-2">
+                        <h1 className="text-2xl font-display font-bold text-[color:var(--text-primary)]">Thank you</h1>
+                        <p className="text-[color:var(--text-secondary)] text-sm">
+                            {formConfig.settings.confirmationMessage ??
+                                "Your response is stored permanently on Walrus."}
+                        </p>
+                    </div>
+                    {formConfig.settings.postSubmitNote && (
+                        <div className="w-full mt-1 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--surface-panel)] p-4 text-left">
+                            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[color:var(--text-muted)] mb-2">
+                                <Icon icon="fluent:note-24-regular" className="w-3 h-3" />
+                                A note from the creator
+                            </div>
+                            <p className="text-xs text-[color:var(--text-primary)] leading-relaxed whitespace-pre-wrap break-words">
+                                <Linkified text={formConfig.settings.postSubmitNote} />
+                            </p>
+                        </div>
+                    )}
                     <button
                         onClick={() => setSubmitted(false)}
-                        className="text-sm text-[#a78bfa] hover:text-[#c4b5fd] transition-colors"
+                        className="text-xs text-[color:var(--text-muted)] hover:text-[#a78bfa] transition-colors mt-1"
                     >
-                        Submit another response
+                        ← Back to preview
                     </button>
+                    <p className="text-[10px] text-[color:var(--text-soft)]">Preview · no data was sent</p>
                 </motion.div>
             </div>
         );

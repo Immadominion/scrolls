@@ -21,7 +21,7 @@ import {
     type FormIndexEntry,
 } from "@/lib/formIndex";
 import { listSubmissions } from "@/lib/submissionIndex";
-import { getMyForms, getSubmissionsForForm } from "@/lib/registry";
+import { getMyForms, getSubmissionsForForm, getFormsSharedWithMe } from "@/lib/registry";
 import { hasOnchainRegistry } from "@/lib/contracts";
 import { truncateAddress } from "@/lib/sui";
 import { listDrafts, removeDraft, type DraftEntry } from "@/lib/draftIndex";
@@ -96,19 +96,48 @@ export default function DashboardPage() {
         (async () => {
             try {
                 const onchain = await getMyForms(account.address);
-                if (cancelled || onchain.length === 0) return;
+                const shared = await getFormsSharedWithMe(account.address);
+                if (cancelled) return;
+                if (onchain.length === 0 && shared.length === 0) return;
                 const known = new Set(
                     listForms(account.address).map((f) => f.formId),
                 );
                 let added = 0;
-                for (const f of onchain) {
+                // Owned: fetch each Walrus blob in parallel so the
+                // dashboard shows the real title / field count / privacy
+                // flag, not a placeholder. Same origin or different
+                // origin (scrolls.fun vs *.wal.app) no longer matters —
+                // truth lives on-chain + Walrus.
+                const ownedNew = onchain.filter((f) => !known.has(f.pointerId));
+                const ownedEnriched = await Promise.all(
+                    ownedNew.map(async (f) => {
+                        try {
+                            const cfg = await fetchJSON<FormConfig>(f.blobId);
+                            return { f, cfg };
+                        } catch {
+                            return { f, cfg: null as FormConfig | null };
+                        }
+                    }),
+                );
+                if (cancelled) return;
+                for (const { f, cfg } of ownedEnriched) {
+                    addForm(account.address, {
+                        formId: f.pointerId,
+                        title: cfg?.title || "Untitled form",
+                        createdAt: new Date(f.createdAtMs).toISOString(),
+                        fieldCount: Array.isArray(cfg?.fields) ? cfg!.fields.length : 0,
+                        isPrivate: !!cfg?.settings?.isPrivate,
+                    });
+                    added += 1;
+                }
+                for (const f of shared) {
                     if (known.has(f.pointerId)) continue;
                     addForm(account.address, {
                         formId: f.pointerId,
-                        title: "On-chain form",
+                        title: f.title || "Shared form",
                         createdAt: new Date(f.createdAtMs).toISOString(),
-                        fieldCount: 0,
-                        isPrivate: false,
+                        fieldCount: f.fieldCount ?? 0,
+                        isPrivate: !!f.isPrivate,
                     });
                     added += 1;
                 }

@@ -9,26 +9,26 @@ title: Bug report
 description: Help us squash it. Anything you can share helps.
 
 settings:
-    isPrivate: false   # set to true to encrypt every response
-    allowAnonymous: true
+  isPrivate: false # set to true to encrypt every response
+  allowAnonymous: true
 
 fields:
-    - type: short_text
-      label: Title
-      required: true
-      placeholder: One-line summary
+  - type: short_text
+    label: Title
+    required: true
+    placeholder: One-line summary
 
-    - type: long_text
-      label: What happened?
-      required: true
-      placeholder: Steps, expected, actual
+  - type: long_text
+    label: What happened?
+    required: true
+    placeholder: Steps, expected, actual
 
-    - type: dropdown
-      label: Severity
-      required: true
-      options: [low, medium, high, critical]
+  - type: dropdown
+    label: Severity
+    required: true
+    options: [low, medium, high, critical]
 
-    - type: short_text
-      label: Contact email
-      required: false
-      placeholder: you@example.com
+  - type: short_text
+    label: Contact email
+    required: false
+    placeholder: you@example.com

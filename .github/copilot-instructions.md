@@ -76,7 +76,7 @@ Module augmentation is required: `declare module '@mysten/dapp-kit-react' { inte
 | AI proxy | `ai-proxy/src/worker.ts` |
 | Env example | `app/.env.example` |
 | Product spec | `docs/SPEC.md` |
-| Engineering plan | `docs/ENGINEERING-PLAN.md` |
+| Programmatic guide | `docs/PROGRAMMATIC.md` |
 | Visual design doc | `scrolls/DESIGN.md` |
 
 ---

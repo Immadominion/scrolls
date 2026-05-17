@@ -4,15 +4,17 @@
 
 [![Walrus](https://img.shields.io/badge/storage-Walrus_mainnet-4f8ff7?style=flat-square)](https://www.walrus.xyz/)
 [![Sui](https://img.shields.io/badge/registry-Sui_testnet-6fbcf0?style=flat-square)](https://sui.io/)
-[![Seal](https://img.shields.io/badge/private_responses-Seal-22c55e?style=flat-square)](https://seal-docs.wal.app/)
+[![Private](https://img.shields.io/badge/private_responses-browser_E2E-22c55e?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 [![Static export](https://img.shields.io/badge/Next.js_16-static-black?style=flat-square)](https://nextjs.org/)
 
 Submission for **Walrus Sessions Round 2 — Form Tooling** ($1,500).
 
-- 🌐 **Live (Walrus Site):** [`3z1329sy….wal.app`](https://3z1329syoieg9laz3kilwa9y98d2i1raqqodp74rmyc9n4fnmu.testnet.wal.app)
-- 🌐 **Live (Production):** [`scrolls.fun`](https://scrolls.fun) · [`scrolls-tau.vercel.app`](https://scrolls-tau.vercel.app)
+- 🌐 **Live (Walrus Site):** [`scrolls.wal.app`](https://scrolls.wal.app)
+- 🌐 **Live (Web):** [`scrolls.fun`](https://scrolls.fun)
 - 🎥 **Demo (on Walrus):** *fill in after recording*
 - 🐳 **Move package (Sui testnet):** [`0x6418bc0c…7b10a0`](https://suiscan.xyz/testnet/object/0x6418bc0c11e75ef443f7e8fedb9a860b6cc3bfe5909481dc309472ad8b7b10a0)
+
+![Scrolls hero section](./hero-section.png)
 
 ---
 
@@ -20,40 +22,55 @@ Submission for **Walrus Sessions Round 2 — Form Tooling** ($1,500).
 
 | | |
 |---|---|
-| **Build** | Drag-and-drop form builder. Short text, rich text, dropdown, checkbox, star rating, file & video upload, URL, confirmation. AI-assisted draft from a prompt + optional image / PDF / audio. |
-| **Share** | Clean public URL `/f?id=<form-id>`. Custom-slug short links (`<host>/s/<slug>`) signed by your wallet. QR code in one click. |
-| **Collect** | Submissions are JSON blobs on Walrus mainnet. File/video answers are uploaded as separate Walrus blobs. Responses can be public or end-to-end encrypted. |
-| **Encrypt** | Private responses use a per-form ECIES envelope today (ECDH P-256 + HKDF-SHA256 + AES-GCM-256, browser-side). Seal multi-admin policies are wired on testnet for the next milestone. |
-| **Review** | Per-form admin dashboard: sortable list, inline notes, priority tags, AI-assisted sentiment & topic clustering (Claude Haiku), CSV / JSON export. |
+| **Build** | AI-first or manual drag-and-drop builder. Short text, rich text, dropdown, checkbox, star rating, file upload, video upload, URL, and confirmation fields. |
+| **Share** | Permanent public URL, QR share card, PNG export, and custom short slugs signed by the creator wallet. |
+| **Collect** | Walletless responses for normal respondents, optional wallet signatures for verified submissions, and Walrus-backed storage for every answer and attachment. |
+| **Encrypt** | Private forms encrypt responses in the browser before upload using ECDH P-256 + HKDF-SHA256 + AES-GCM-256. |
+| **Review** | Admin inbox with notes, priority, AI summaries, topic clustering, sentiment, and CSV or JSON export. |
+
+Respondents do **not** need a wallet by default. Wallet connection is only required when the form owner explicitly disables anonymous submissions or when a respondent wants to attach a wallet signature to their response.
+
+---
+
+## Product flow
+
+```mermaid
+flowchart LR
+      A[Describe the form with text, voice, image, or PDF] --> B[Generate with AI or refine manually in the builder]
+      B --> C[Publish the form]
+      C --> D[Share via link, QR card, or short slug]
+      D --> E[Public form opens instantly for respondents]
+      E --> F[Responses and attachments are stored on Walrus]
+      F --> G[Admin dashboard loads the inbox]
+      G --> H[Notes, priority, AI analysis, CSV and JSON export]
+```
 
 ---
 
 ## Architecture
 
-```
-┌────────────────────────────────────────────────────────────┐
-│            Browser (Next.js 16 static export)              │
-│   builder · public form · dashboard · responses viewer     │
-└────────────┬──────────────────┬──────────────┬─────────────┘
-             │                  │              │
-       blob R/W           tx + reads      AI / shorten
-             │                  │              │
-   ┌─────────▼────────┐  ┌──────▼─────┐ ┌──────▼──────────┐
-   │  Walrus mainnet  │  │ Sui (test) │ │ Cloudflare      │
-   │  (form + answer  │  │ FormPointer│ │ Worker          │
-   │   blobs, files)  │  │ Submission │ │  ai-proxy/      │
-   │                  │  │ Ref + Seal │ │  Claude · Whisper│
-   │                  │  │ Policy     │ │  /s short links │
-   └──────────────────┘  └────────────┘ └─────────────────┘
-```
+![Scrolls architecture](./scrolls-architecure-image.png)
 
 **No backend, ever.** The frontend is a static export — every byte is shipped to the browser, every data op goes directly to Walrus, Sui, or the Cloudflare Worker (which only proxies AI keys).
+
+```mermaid
+flowchart LR
+      subgraph Browser[Browser app]
+            Hero[AI hero]
+            Builder[Builder]
+            Public[Public form]
+            Inbox[Responses dashboard]
+      end
+
+      Browser -->|form blobs, submission blobs, file blobs, receipts| Walrus[Walrus mainnet]
+      Browser -->|FormPointer, SubmissionRef, FormPolicy| Sui[Sui testnet]
+      Browser -->|Claude Haiku, Whisper, short links| Worker[Cloudflare Worker]
+```
 
 | Component | Network | Where |
 |---|---|---|
 | Form / answer blobs | Walrus mainnet | [`aggregator.walrus.space`](https://aggregator.walrus.space) |
 | `FormPointer`, `SubmissionRef`, `FormPolicy` | Sui testnet | `0x6418bc0c…7b10a0` |
-| Seal verifier | Sui testnet | `0x40168694…b2c3` |
 | AI proxy + short links | Cloudflare Worker | [`ai-proxy/`](./ai-proxy/) |
 
 ---
@@ -81,18 +98,21 @@ Full reference: **[docs/PROGRAMMATIC.md](./docs/PROGRAMMATIC.md)** · packages l
 
 ## Repo layout
 
-```
-app/         Next.js 16 (App Router, static export). The product.
-ai-proxy/    Cloudflare Worker — Anthropic + Whisper proxy + /s shortener
-move/scrolls Move package: form_pointer, submission_ref, seal_policy
-packages/    @scrolls/sdk, @scrolls/cli, @scrolls/mcp
-docs/        SPEC, ENGINEERING-PLAN, TESTING, PROGRAMMATIC
+```mermaid
+flowchart TD
+      Root[scrolls/]
+      Root --> App[app/ - Next.js static product]
+      Root --> Worker[ai-proxy/ - Claude, Whisper, short links]
+      Root --> Move[move/scrolls - FormPointer, SubmissionRef, FormPolicy]
+      Root --> Packages[packages/ - SDK, CLI, MCP]
+      Root --> Docs[docs/ - SPEC, TESTING, PROGRAMMATIC]
 ```
 
 For deeper dives:
 
 - [`docs/SPEC.md`](docs/SPEC.md) — product spec
 - [`docs/TESTING.md`](docs/TESTING.md) — manual test plan
+- [`docs/PROGRAMMATIC.md`](docs/PROGRAMMATIC.md) — SDK, CLI, and MCP guide
 - [`DEPLOY.md`](DEPLOY.md) — deploy your own copy
 
 ---

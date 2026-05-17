@@ -264,6 +264,43 @@ export default function FormSettingsMenu({
                                 )}
                             </div>
                         )}
+                        <div className="px-4 pt-3 pb-3 border-t border-[color:var(--border-subtle)]">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Icon
+                                    icon="fluent:chat-multiple-24-regular"
+                                    className="w-3.5 h-3.5 text-[#a78bfa]"
+                                />
+                                <p className="text-[10px] font-semibold text-[color:var(--text-muted)] uppercase tracking-[0.16em]">
+                                    After submit
+                                </p>
+                            </div>
+                            <label className="block text-[11px] text-[color:var(--text-muted)] mb-1">
+                                Thank-you message
+                            </label>
+                            <input
+                                type="text"
+                                value={settings.confirmationMessage ?? ""}
+                                onChange={(e) =>
+                                    onUpdate({ confirmationMessage: e.target.value })
+                                }
+                                placeholder="Your response is stored permanently on Walrus."
+                                maxLength={200}
+                                className="w-full px-2 py-1.5 text-[12px] bg-[color:var(--background-subtle)] border border-[color:var(--border-subtle)] rounded-[10px] outline-none focus:border-[#a78bfa]/40 text-[color:var(--text-primary)] placeholder:text-[color:var(--text-muted)]"
+                            />
+                            <label className="block text-[11px] text-[color:var(--text-muted)] mt-2.5 mb-1">
+                                Creator note <span className="text-[color:var(--text-soft)]">(links auto-detected)</span>
+                            </label>
+                            <textarea
+                                value={settings.postSubmitNote ?? ""}
+                                onChange={(e) =>
+                                    onUpdate({ postSubmitNote: e.target.value })
+                                }
+                                placeholder="e.g. Join our Discord: https://discord.gg/…"
+                                maxLength={500}
+                                rows={3}
+                                className="w-full px-2 py-1.5 text-[12px] bg-[color:var(--background-subtle)] border border-[color:var(--border-subtle)] rounded-[10px] outline-none focus:border-[#a78bfa]/40 text-[color:var(--text-primary)] placeholder:text-[color:var(--text-muted)] resize-none"
+                            />
+                        </div>
                         <div className="px-4 py-2.5 text-[11px] text-[color:var(--text-muted)] border-t border-[color:var(--border-subtle)] flex items-center gap-1.5">
                             <Icon icon="fluent:cloud-24-regular" className="w-3.5 h-3.5 text-[color:var(--text-soft)]" />
                             All responses store permanently on Walrus.

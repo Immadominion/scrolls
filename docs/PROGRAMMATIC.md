@@ -62,7 +62,7 @@ That's it. The form is live on Walrus, indexed on Sui, and reachable from any br
 
 The web builder is great for ad-hoc forms. The programmatic surface is for everything else:
 
-- **Bug-report widgets in your own app:** embed `<a href=`https://scrolls.fun/f?id={formId}`>Report a bug</a>` and never run a backend.
+- **Bug-report widgets in your own app:** embed `<a href=`<https://scrolls.fun/f?id={formId}`>Report> a bug</a>` and never run a backend.
 - **CI feedback:** fail a build, file a form, link it in the PR comment.
 - **Agentic flows:** let an LLM design a survey, publish it, share the link, then read responses back when they arrive.
 - **Migrations:** bulk-create forms from existing systems with the SDK in a loop.
@@ -71,6 +71,7 @@ The web builder is great for ad-hoc forms. The programmatic surface is for every
 ---
 
 <a id="sdk"></a>
+
 ## SDK - `@scrolls/sdk`
 
 The foundation. Pure Node 20+, ESM-only, zero runtime config. The CLI and MCP server are thin wrappers around it.
@@ -238,6 +239,7 @@ Common ones:
 ---
 
 <a id="cli"></a>
+
 ## CLI - `@scrolls/cli`
 
 The `scrolls` command. Wraps the SDK with a config file at `~/.scrolls/config.json`.
@@ -361,6 +363,7 @@ scrolls submissions "$FORM_ID" --json | jq '.[] | select(.wasEncrypted == false)
 ---
 
 <a id="mcp"></a>
+
 ## MCP - `@scrolls/mcp`
 
 Model Context Protocol server. Lets any MCP-aware agent, including Claude Desktop, Cursor, Continue, or your own, create and read Scrolls forms on your behalf.

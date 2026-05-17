@@ -2,6 +2,15 @@
 # This file contains metadata about published versions of this package in different environments
 # This file SHOULD be committed to source control
 
+[published.mainnet]
+chain-id = "35834a8a"
+published-at = "0xbd376f7ee099f1b91b52c00dc4f5b3f8535bffd02b44baa2f9aba225abe64d95"
+original-id = "0xbd376f7ee099f1b91b52c00dc4f5b3f8535bffd02b44baa2f9aba225abe64d95"
+version = 1
+toolchain-version = "1.72.1"
+build-config = { flavor = "sui", edition = "2024" }
+upgrade-capability = "0x5fce20eaef9e240687e5f9d39e9c9c243ae47d01eccdd972bd8b3776d12cbbd7"
+
 [published.testnet]
 chain-id = "4c78adac"
 published-at = "0x6418bc0c11e75ef443f7e8fedb9a860b6cc3bfe5909481dc309472ad8b7b10a0"

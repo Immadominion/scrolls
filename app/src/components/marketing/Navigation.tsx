@@ -30,19 +30,19 @@ export default function Navigation() {
 
                 <div className="flex items-center gap-2 md:gap-8">
                     <a
-                        href="#features"
+                        href="/#features"
                         className="hidden text-sm text-[color:var(--text-secondary)] transition-colors duration-300 hover:text-[color:var(--text-primary)] md:inline"
                     >
                         Features
                     </a>
                     <a
-                        href="#how-it-works"
+                        href="/#how-it-works"
                         className="hidden text-sm text-[color:var(--text-secondary)] transition-colors duration-300 hover:text-[color:var(--text-primary)] md:inline"
                     >
                         How it works
                     </a>
                     <a
-                        href="#programmatic"
+                        href="/#programmatic"
                         className="hidden text-sm text-[color:var(--text-secondary)] transition-colors duration-300 hover:text-[color:var(--text-primary)] md:inline"
                     >
                         Developers

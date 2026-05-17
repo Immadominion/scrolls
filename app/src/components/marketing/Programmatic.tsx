@@ -12,7 +12,7 @@ function CodeBlock({ title, lines }: { title: string; lines: Line[] }) {
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c0c0c] shadow-2xl shadow-black/50">
             {/* Top glass highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            
+
             <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
                 <div className="flex items-center gap-2">
                     <div className="h-2.5 w-2.5 rounded-full bg-white/20 transition-colors hover:bg-red-500/80" />

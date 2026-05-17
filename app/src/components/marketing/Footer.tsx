@@ -15,11 +15,11 @@ export default function Footer() {
                     </div>
 
                     <div className="flex gap-8 text-sm">
-                        <a href="#features" className="text-[color:var(--text-primary)]/40 transition-colors hover:text-[color:var(--text-primary)]">
+                        <a href="/#features" className="text-[color:var(--text-primary)]/40 transition-colors hover:text-[color:var(--text-primary)]">
                             Features
                         </a>
                         <a
-                            href="#how-it-works"
+                            href="/#how-it-works"
                             className="text-[color:var(--text-primary)]/40 transition-colors hover:text-[color:var(--text-primary)]"
                         >
                             How it works

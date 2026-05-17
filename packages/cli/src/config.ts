@@ -36,7 +36,7 @@ export async function writeConfig(cfg: CliConfig): Promise<void> {
     }
     await writeFile(CONFIG_PATH, JSON.stringify(cfg, null, 2), "utf8");
     // Protect the private key — owner-only read/write.
-    await chmod(CONFIG_PATH, 0o600).catch(() => {});
+    await chmod(CONFIG_PATH, 0o600).catch(() => { });
 }
 
 /** Merge CLI flags onto the persistent config. CLI flags win. */

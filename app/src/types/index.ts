@@ -43,6 +43,13 @@ export interface FormSettings {
     closesAt?: string;           // ISO timestamp
     redirectUrl?: string;        // after submit
     confirmationMessage?: string;
+    /**
+     * Optional creator note shown on the post-submit screen beneath the
+     * thank-you message. URLs are auto-linkified at render time, so this
+     * is the right place for "join our Discord", "schedule a follow-up",
+     * "follow updates here", etc. Plain text only — no HTML.
+     */
+    postSubmitNote?: string;
 }
 
 export interface FormConfig {

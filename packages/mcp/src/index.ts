@@ -196,9 +196,9 @@ server.registerTool(
         const responses = Array.isArray(args.responses)
             ? args.responses
             : Object.entries(args.responses).map(([fieldId, value]) => ({
-                  fieldId,
-                  value,
-              }));
+                fieldId,
+                value,
+            }));
         const result = await client.submit(args.formId, responses);
         return jsonResult(result);
     },

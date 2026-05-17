@@ -167,93 +167,93 @@ export default function Comparison() {
                 </motion.div>
 
                 <div className="-mx-6 overflow-x-auto px-6 sm:-mx-0 sm:px-0 md:overflow-visible">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="relative grid min-w-[620px] grid-cols-4 gap-0 md:min-w-0 md:grid-cols-5"
-                >
-                    <div className="col-span-1 hidden pt-24 md:block">
-                        {Object.entries(featureLabels).map(([key, label], index) => (
-                            <motion.div
-                                key={key}
-                                className={`flex h-14 cursor-pointer items-center px-3 text-[13px] font-medium transition-colors duration-300 ${activeFeature === index ? "text-[color:var(--text-primary)]" : "text-[color:var(--text-primary)]/40"}`}
-                                onMouseEnter={() => {
-                                    setActiveFeature(index);
-                                    setIsAutoPlaying(false);
-                                }}
-                                onMouseLeave={() => setIsAutoPlaying(true)}
-                                animate={activeFeature === index ? { x: [0, 4, 0] } : {}}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {label}
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {platforms.map((platform) => (
-                        <div
-                            key={platform.name}
-                            className={`relative col-span-1 flex flex-col ${platform.highlight ? "z-10 -mx-1 md:mx-0" : ""}`}
-                        >
-                            {platform.highlight && (
-                                <motion.div
-                                    className="absolute inset-0 rounded-2xl border border-violet-500/30 bg-zinc-900/60 shadow-[0_0_40px_rgba(139,92,246,0.1)] backdrop-blur-xl"
-                                    layoutId="highlightBackground"
-                                />
-                            )}
-
-                            <div
-                                className={`relative flex h-24 flex-col items-center justify-center p-3 text-center md:h-26 ${platform.highlight ? "pt-6" : ""}`}
-                            >
-                                {platform.highlight && (
-                                    <div className="absolute top-0 -translate-y-1/2 rounded-full border border-violet-500/50 bg-zinc-900 px-3 py-1 shadow-[0_0_15px_rgba(139,92,246,0.5)]">
-                                        <div className="flex items-center gap-1.5">
-                                            <Zap className="h-3 w-3 fill-violet-400 text-violet-400" />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--text-primary)]">
-                                                Best Choice
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <h3
-                                    className={`font-bold ${platform.highlight ? "text-lg text-[color:var(--text-primary)] md:text-[1.15rem]" : "text-base text-[color:var(--text-muted)]"}`}
-                                >
-                                    {platform.name}
-                                </h3>
-                                <p
-                                    className={`mt-1 text-xs ${platform.highlight ? "text-violet-300/80" : "text-[color:var(--text-primary)]/20"}`}
-                                >
-                                    {platform.tagline}
-                                </p>
-                            </div>
-
-                            {Object.keys(featureLabels).map((key, index) => (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="relative grid min-w-[620px] grid-cols-4 gap-0 md:min-w-0 md:grid-cols-5"
+                    >
+                        <div className="col-span-1 hidden pt-24 md:block">
+                            {Object.entries(featureLabels).map(([key, label], index) => (
                                 <motion.div
                                     key={key}
-                                    className={`relative flex h-14 items-center justify-center border-b transition-all duration-300 ${platform.highlight ? "border-white/5" : "border-transparent"} ${activeFeature === index && platform.highlight ? "bg-violet-500/10" : ""} ${platform.highlight ? "" : index !== Object.keys(featureLabels).length - 1 ? "bg-[length:1px_100%] bg-right bg-no-repeat bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" : ""}`}
+                                    className={`flex h-14 cursor-pointer items-center px-3 text-[13px] font-medium transition-colors duration-300 ${activeFeature === index ? "text-[color:var(--text-primary)]" : "text-[color:var(--text-primary)]/40"}`}
                                     onMouseEnter={() => {
                                         setActiveFeature(index);
                                         setIsAutoPlaying(false);
                                     }}
                                     onMouseLeave={() => setIsAutoPlaying(true)}
-                                    animate={activeFeature === index ? { scale: [1, 1.05, 1] } : {}}
+                                    animate={activeFeature === index ? { x: [0, 4, 0] } : {}}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <StatusIcon
-                                        status={platform.features[key]}
-                                        highlight={platform.highlight && activeFeature === index}
-                                    />
+                                    {label}
                                 </motion.div>
                             ))}
-
-                            {platform.highlight && (
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 rounded-b-2xl bg-gradient-to-t from-violet-500/10 to-transparent" />
-                            )}
                         </div>
-                    ))}
-                </motion.div>
+
+                        {platforms.map((platform) => (
+                            <div
+                                key={platform.name}
+                                className={`relative col-span-1 flex flex-col ${platform.highlight ? "z-10 -mx-1 md:mx-0" : ""}`}
+                            >
+                                {platform.highlight && (
+                                    <motion.div
+                                        className="absolute inset-0 rounded-2xl border border-violet-500/30 bg-zinc-900/60 shadow-[0_0_40px_rgba(139,92,246,0.1)] backdrop-blur-xl"
+                                        layoutId="highlightBackground"
+                                    />
+                                )}
+
+                                <div
+                                    className={`relative flex h-24 flex-col items-center justify-center p-3 text-center md:h-26 ${platform.highlight ? "pt-6" : ""}`}
+                                >
+                                    {platform.highlight && (
+                                        <div className="absolute top-0 -translate-y-1/2 rounded-full border border-violet-500/50 bg-zinc-900 px-3 py-1 shadow-[0_0_15px_rgba(139,92,246,0.5)]">
+                                            <div className="flex items-center gap-1.5">
+                                                <Zap className="h-3 w-3 fill-violet-400 text-violet-400" />
+                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--text-primary)]">
+                                                    Best Choice
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <h3
+                                        className={`font-bold ${platform.highlight ? "text-lg text-[color:var(--text-primary)] md:text-[1.15rem]" : "text-base text-[color:var(--text-muted)]"}`}
+                                    >
+                                        {platform.name}
+                                    </h3>
+                                    <p
+                                        className={`mt-1 text-xs ${platform.highlight ? "text-violet-300/80" : "text-[color:var(--text-primary)]/20"}`}
+                                    >
+                                        {platform.tagline}
+                                    </p>
+                                </div>
+
+                                {Object.keys(featureLabels).map((key, index) => (
+                                    <motion.div
+                                        key={key}
+                                        className={`relative flex h-14 items-center justify-center border-b transition-all duration-300 ${platform.highlight ? "border-white/5" : "border-transparent"} ${activeFeature === index && platform.highlight ? "bg-violet-500/10" : ""} ${platform.highlight ? "" : index !== Object.keys(featureLabels).length - 1 ? "bg-[length:1px_100%] bg-right bg-no-repeat bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" : ""}`}
+                                        onMouseEnter={() => {
+                                            setActiveFeature(index);
+                                            setIsAutoPlaying(false);
+                                        }}
+                                        onMouseLeave={() => setIsAutoPlaying(true)}
+                                        animate={activeFeature === index ? { scale: [1, 1.05, 1] } : {}}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <StatusIcon
+                                            status={platform.features[key]}
+                                            highlight={platform.highlight && activeFeature === index}
+                                        />
+                                    </motion.div>
+                                ))}
+
+                                {platform.highlight && (
+                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 rounded-b-2xl bg-gradient-to-t from-violet-500/10 to-transparent" />
+                                )}
+                            </div>
+                        ))}
+                    </motion.div>
                 </div>
 
                 <motion.p

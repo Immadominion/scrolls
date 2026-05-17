@@ -22,6 +22,7 @@ compiled_package_info:
     root_as_zero: false
     environment: ~
     set_unpublished_deps_to_zero: false
+    pubfile_path: ~
 dependencies:
   - MoveStdlib
   - Sui

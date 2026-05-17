@@ -404,6 +404,94 @@ export interface SubmissionEvent {
 }
 
 /**
+ * Discover forms where the given address is listed as a reviewer
+ * (in the form's Walrus blob `admins[]`). Scans recent FormPublished
+ * events, fetches each blob in parallel, and returns matches sorted
+ * newest-first.
+ *
+ * Cost: O(N) Walrus reads per call (N = scanned events). Caller
+ * should batch + cache. Returns [] silently on any error so the
+ * dashboard never blocks.
+ */
+export async function getFormsSharedWithMe(
+    address: string,
+    options: { scanLimit?: number } = {},
+): Promise<Array<FormPointerSummary & { title?: string; isPrivate?: boolean; fieldCount?: number }>> {
+    if (!hasOnchainRegistry() || !address) return [];
+    const target = address.toLowerCase();
+    const scanLimit = options.scanLimit ?? 100;
+    try {
+        // Lazy import to keep this off the critical path of registry consumers
+        // that don't need Walrus.
+        const { fetchJSON } = await import("./walrus");
+        const events = await suiClient().queryEvents({
+            query: {
+                MoveEventType: `${SCROLLS_PACKAGE}::form_pointer::FormPublished`,
+            },
+            order: "descending",
+            limit: scanLimit,
+        });
+        // Dedupe by pointer; skip events the address sent themselves
+        // (those surface via getMyForms already).
+        const seen = new Set<string>();
+        const candidates: Array<{
+            pointerId: string;
+            owner: string;
+            blobId: string;
+            createdAtMs: number;
+        }> = [];
+        for (const ev of events.data) {
+            if (ev.sender.toLowerCase() === target) continue;
+            const f = ev.parsedJson as FormPublishedFields | undefined;
+            if (!f?.pointer_id || seen.has(f.pointer_id)) continue;
+            seen.add(f.pointer_id);
+            candidates.push({
+                pointerId: f.pointer_id,
+                owner: f.owner,
+                blobId: bytesFieldToString(f.blob_id),
+                createdAtMs: Number(f.created_at_ms),
+            });
+        }
+        if (candidates.length === 0) return [];
+        // Fetch all candidate blobs in parallel and filter to those that
+        // list `target` as an admin.
+        const results = await Promise.all(
+            candidates.map(async (c) => {
+                try {
+                    const cfg = await fetchJSON<{
+                        title?: string;
+                        admins?: string[];
+                        settings?: { isPrivate?: boolean };
+                        fields?: unknown[];
+                    }>(c.blobId);
+                    if (!cfg || typeof cfg !== "object") return null;
+                    const admins = Array.isArray(cfg.admins)
+                        ? cfg.admins.map((a) => String(a).toLowerCase())
+                        : [];
+                    if (!admins.includes(target)) return null;
+                    return {
+                        pointerId: c.pointerId,
+                        owner: c.owner,
+                        blobId: c.blobId,
+                        version: 1,
+                        createdAtMs: c.createdAtMs,
+                        updatedAtMs: c.createdAtMs,
+                        title: cfg.title,
+                        isPrivate: !!cfg.settings?.isPrivate,
+                        fieldCount: Array.isArray(cfg.fields) ? cfg.fields.length : 0,
+                    };
+                } catch {
+                    return null;
+                }
+            }),
+        );
+        return results
+            .filter((r): r is NonNullable<typeof r> => r !== null)
+            .sort((a, b) => b.createdAtMs - a.createdAtMs);
+    } catch {
+        return [];
+    }
+}/**
  * Stream all SubmissionRecorded events for a given pointer.
  * Returns newest-first, deduped by submission id.
  */

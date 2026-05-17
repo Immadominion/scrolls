@@ -15,6 +15,7 @@ import { getFormPointer, isPointerId, recordSubmission } from "@/lib/registry";
 import { hasOnchainRegistry } from "@/lib/contracts";
 import { DotLottieReact, setWasmUrl } from "@lottiefiles/dotlottie-react";
 import { useScrollsAccount, useScrollsDAppKit, useScrollsWallets } from "@/lib/useScrollsAccount";
+import { Linkified } from "@/lib/linkify";
 import { buildSignedMessage, digestSubmission } from "@/lib/submissionAuth";
 import ScrollsLogo from "@/components/brand/ScrollsLogo";
 import WalletButton from "@/components/wallet/WalletButton";
@@ -614,7 +615,7 @@ function FormContent() {
                     "";
                 if (relayBase) {
                     try {
-                        await fetch(`${relayBase.replace(/\/$/, "")}/record`, {
+                        const res = await fetch(`${relayBase.replace(/\/$/, "")}/record`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -622,6 +623,10 @@ function FormContent() {
                                 blobId,
                             }),
                         });
+                        if (!res.ok && process.env.NODE_ENV === "development") {
+                            const txt = await res.text().catch(() => "");
+                            console.warn("[PublicFormPage] relay /record non-ok:", res.status, txt);
+                        }
                     } catch (relayErr) {
                         if (process.env.NODE_ENV === "development") {
                             console.warn(
@@ -699,6 +704,18 @@ function FormContent() {
                                 "Your response is stored permanently on Walrus."}
                         </p>
                     </div>
+
+                    {formConfig?.settings.postSubmitNote && (
+                        <div className="w-full mt-1 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--surface-panel)] p-4 text-left">
+                            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[color:var(--text-muted)] mb-2">
+                                <Icon icon="fluent:note-24-regular" className="w-3 h-3" />
+                                A note from the creator
+                            </div>
+                            <p className="text-xs text-[color:var(--text-primary)] leading-relaxed whitespace-pre-wrap break-words">
+                                <Linkified text={formConfig.settings.postSubmitNote} />
+                            </p>
+                        </div>
+                    )}
 
                     {receiptBlobId && (
                         <div className="w-full mt-2 rounded-2xl border border-[color:var(--border-default)] bg-[color:var(--surface-panel)] p-4 text-left">
