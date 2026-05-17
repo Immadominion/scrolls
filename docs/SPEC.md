@@ -173,7 +173,7 @@ When `is_private: true`:
 1. **Form creator** — at publish time the browser generates a fresh ECDH P-256 keypair via the Web Crypto SubtleCrypto API. The public JWK is embedded in the `FormConfig` blob on Walrus; the private JWK is stored in `localStorage` (`scrolls:formkey:<formId>`) with a downloadable JSON backup file the owner is prompted to save.
 2. **On submission**: the respondent's browser generates an ephemeral ECDH keypair, derives a shared secret with the form's public key, derives an AES-GCM-256 key via HKDF-SHA256, and encrypts the submission JSON with a fresh 12-byte IV. The Walrus blob stores `{ v, alg: "ECDH-P256+HKDF-SHA256+AES-GCM-256", ephemeralPub, iv, ciphertext }` — all base64url. Plaintext never leaves the respondent's browser.
 3. **Dashboard decryption**: the responses viewer detects the envelope shape, loads the form's private key from `localStorage` (or prompts the owner to import the key backup if missing), and decrypts in the browser. Plaintext is never persisted anywhere.
-4. ** Coming-next: — Seal upgrade**: the single-key model means losing the backup file means losing access to all responses.  Coming-next: migrates the privacy primitive to Seal with a deployed Move package containing `seal_approve*` functions, enabling multi-admin allowlists, time-locked decryption, and recovery without a single point of failure.
+4. **Seal upgrade (not done yet)**: the single-key model means losing the backup file means losing access to all responses. The planned upgrade migrates the privacy primitive to Seal with a deployed Move package containing `seal_approve*` functions, enabling multi-admin allowlists, time-locked decryption, and recovery without a single point of failure.
 
 ### 3.5 AI Form Builder (Planned Next)
 

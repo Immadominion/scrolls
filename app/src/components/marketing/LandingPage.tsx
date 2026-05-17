@@ -3,6 +3,7 @@ import Hero from "./Hero";
 import BentoFeatures from "./BentoFeatures";
 import CreatorFlow from "./CreatorFlow";
 import Comparison from "./Comparison";
+import Programmatic from "./Programmatic";
 import FinalCTA from "./FinalCTA";
 import Footer from "./Footer";
 
@@ -14,6 +15,7 @@ export default function LandingPage() {
             <BentoFeatures />
             <CreatorFlow />
             <Comparison />
+            <Programmatic />
             <FinalCTA />
             <Footer />
         </main>

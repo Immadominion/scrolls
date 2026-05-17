@@ -34,18 +34,18 @@ export default function BuilderHeader({
     onUpdateSettings,
 }: BuilderHeaderProps) {
     return (
-        <header className="relative h-14 flex items-center px-4 gap-3 shrink-0 bg-[color:var(--background-app)] z-30">
+        <header className="relative h-14 flex items-center px-3 sm:px-4 gap-2 sm:gap-3 shrink-0 bg-[color:var(--background-app)] z-30">
             {/* Logo */}
             <a
                 href="/"
-                className="group flex items-center gap-2 text-[color:var(--text-primary)] shrink-0"
+                className="group flex items-center gap-1.5 sm:gap-2 text-[color:var(--text-primary)] shrink-0"
                 aria-label="Scrolls home"
             >
                 <ScrollsLogo
                     decorative
                     className="h-7 w-7 transition-transform duration-300 group-hover:rotate-[8deg]"
                 />
-                <span className="font-display font-semibold text-sm tracking-tight">
+                <span className="font-display font-semibold text-sm tracking-tight hidden sm:block">
                     Scrolls
                 </span>
             </a>
@@ -64,7 +64,7 @@ export default function BuilderHeader({
                         if (e.target.value === "Untitled form") e.target.select();
                     }}
                     placeholder="Untitled form"
-                    className="text-sm text-[color:var(--text-primary)] truncate w-40 hover:w-56 focus:w-64 font-medium bg-transparent border-0 outline-none placeholder:text-[color:var(--text-muted)] transition-all duration-300 ease-out rounded-[10px] px-2 py-1.5 hover:bg-[color:var(--background-subtle)] focus:bg-[color:var(--background-subtle)] focus-visible:outline-none"
+                    className="text-sm text-[color:var(--text-primary)] truncate w-28 sm:w-40 hover:w-44 sm:hover:w-56 focus:w-44 sm:focus:w-64 font-medium bg-transparent border-0 outline-none placeholder:text-[color:var(--text-muted)] transition-all duration-300 ease-out rounded-[10px] px-2 py-1.5 hover:bg-[color:var(--background-subtle)] focus:bg-[color:var(--background-subtle)] focus-visible:outline-none"
                     aria-label="Form title"
                 />
             </div>

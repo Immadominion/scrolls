@@ -18,7 +18,6 @@ import { useScrollsAccount, useScrollsDAppKit } from "@/lib/useScrollsAccount";
 import { buildSignedMessage, digestSubmission } from "@/lib/submissionAuth";
 import ScrollsLogo from "@/components/brand/ScrollsLogo";
 import RichTextEditor from "@/components/form/RichTextEditor";
-import ThemeToggle from "@/components/theme/ThemeToggle";
 import MouseGlow from "@/components/ui/MouseGlow";
 import DotGrid from "@/components/ui/DotGrid";
 if (typeof window !== "undefined") {
@@ -725,18 +724,15 @@ function FormContent() {
                 transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
                 className="mb-12"
             >
-                <div className="mb-7 flex items-center justify-between gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
-                        <ScrollsLogo decorative className="h-7 w-7" />
-                        <span className="font-display font-semibold text-sm text-[color:var(--text-primary)] tracking-tight">Scrolls</span>
-                        {formConfig.settings.isPrivate && (
-                            <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/25 rounded-2xl uppercase tracking-wider">
-                                <Icon icon="fluent:lock-closed-12-regular" className="w-3 h-3" />
-                                Encrypted
-                            </span>
-                        )}
-                    </div>
-                    <ThemeToggle />
+                <div className="mb-7 flex items-center gap-2">
+                    <ScrollsLogo decorative className="h-7 w-7" />
+                    <span className="font-display font-semibold text-sm text-[color:var(--text-primary)] tracking-tight">Scrolls</span>
+                    {formConfig.settings.isPrivate && (
+                        <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-[#06b6d4] bg-[#06b6d4]/10 border border-[#06b6d4]/25 rounded-2xl uppercase tracking-wider">
+                            <Icon icon="fluent:lock-closed-12-regular" className="w-3 h-3" />
+                            Encrypted
+                        </span>
+                    )}
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-display font-bold text-[color:var(--text-primary)] mb-3 tracking-tight leading-[1.1]">
                     {formConfig.title}

@@ -47,6 +47,15 @@ export function loadAdminMetadata(
     }
 }
 
+export function hasAdminMetadata(
+    formId: string,
+    submissionBlobId: string,
+): boolean {
+    if (typeof localStorage === "undefined") return false;
+    const key = `${PREFIX}${formId}:${submissionBlobId}`;
+    return localStorage.getItem(key) !== null;
+}
+
 /**
  * Delete admin metadata for a submission.
  */

@@ -103,7 +103,7 @@ function StatusIcon({
     }
 
     return (
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--background-app)]mber-500/10">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/10">
             <Minus className="h-3.5 w-3.5 text-amber-500" />
         </div>
     );
@@ -126,10 +126,10 @@ export default function Comparison() {
     }, [isAutoPlaying, isInView]);
 
     return (
-        <section ref={ref} className="relative px-6 py-32 sm:px-8">
+        <section ref={ref} className="relative px-6 py-24 sm:px-8 lg:py-28">
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <motion.div
-                    className="absolute left-1/4 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/[0.03] blur-[120px]"
+                    className="absolute left-1/4 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/[0.03] blur-[110px]"
                     animate={{
                         x: ["-50%", "-45%", "-50%"],
                         y: ["-50%", "-55%", "-50%"],
@@ -137,7 +137,7 @@ export default function Comparison() {
                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                 />
                 <motion.div
-                    className="absolute right-1/4 top-1/3 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-500/[0.03] blur-[100px]"
+                    className="absolute right-1/4 top-1/3 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-500/[0.03] blur-[90px]"
                     animate={{
                         x: ["-50%", "-55%", "-50%"],
                         y: ["-50%", "-45%", "-50%"],
@@ -156,27 +156,28 @@ export default function Comparison() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
-                    className="mb-16 text-center"
+                    className="mb-12 text-center"
                 >
-                    <h2 className="mb-4 font-display text-4xl font-bold tracking-tight text-[color:var(--text-primary)] md:text-5xl">
+                    <h2 className="mb-3 font-display text-3xl font-bold tracking-tight text-[color:var(--text-primary)] sm:text-4xl md:text-[2.75rem]">
                         Not another form tool.
                     </h2>
-                    <p className="mx-auto max-w-xl text-lg text-[color:var(--text-primary)]/40">
+                    <p className="mx-auto max-w-lg text-base text-[color:var(--text-primary)]/40 sm:text-[17px]">
                         Responses that outlive the platform. Compare for yourself.
                     </p>
                 </motion.div>
 
+                <div className="-mx-6 overflow-x-auto px-6 sm:-mx-0 sm:px-0 md:overflow-visible">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={isInView ? { opacity: 1, scale: 1 } : {}}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="relative grid grid-cols-5 gap-0"
+                    className="relative grid min-w-[620px] grid-cols-4 gap-0 md:min-w-0 md:grid-cols-5"
                 >
-                    <div className="col-span-1 hidden pt-32 md:block">
+                    <div className="col-span-1 hidden pt-24 md:block">
                         {Object.entries(featureLabels).map(([key, label], index) => (
                             <motion.div
                                 key={key}
-                                className={`flex h-16 cursor-pointer items-center px-4 text-sm font-medium transition-colors duration-300 ${activeFeature === index ? "text-[color:var(--text-primary)]" : "text-[color:var(--text-primary)]/40"}`}
+                                className={`flex h-14 cursor-pointer items-center px-3 text-[13px] font-medium transition-colors duration-300 ${activeFeature === index ? "text-[color:var(--text-primary)]" : "text-[color:var(--text-primary)]/40"}`}
                                 onMouseEnter={() => {
                                     setActiveFeature(index);
                                     setIsAutoPlaying(false);
@@ -193,17 +194,17 @@ export default function Comparison() {
                     {platforms.map((platform) => (
                         <div
                             key={platform.name}
-                            className={`relative col-span-1 flex flex-col ${platform.highlight ? "z-10 -mx-2 md:-mx-4" : ""}`}
+                            className={`relative col-span-1 flex flex-col ${platform.highlight ? "z-10 -mx-1 md:mx-0" : ""}`}
                         >
                             {platform.highlight && (
                                 <motion.div
-                                    className="absolute inset-0 rounded-2xl border border-violet-500/30 bg-zinc-900/60 shadow-[0_0_50px_rgba(139,92,246,0.1)] backdrop-blur-xl"
+                                    className="absolute inset-0 rounded-2xl border border-violet-500/30 bg-zinc-900/60 shadow-[0_0_40px_rgba(139,92,246,0.1)] backdrop-blur-xl"
                                     layoutId="highlightBackground"
                                 />
                             )}
 
                             <div
-                                className={`relative flex h-32 flex-col items-center justify-center p-4 text-center ${platform.highlight ? "pt-8" : ""}`}
+                                className={`relative flex h-24 flex-col items-center justify-center p-3 text-center md:h-26 ${platform.highlight ? "pt-6" : ""}`}
                             >
                                 {platform.highlight && (
                                     <div className="absolute top-0 -translate-y-1/2 rounded-full border border-violet-500/50 bg-zinc-900 px-3 py-1 shadow-[0_0_15px_rgba(139,92,246,0.5)]">
@@ -217,7 +218,7 @@ export default function Comparison() {
                                 )}
 
                                 <h3
-                                    className={`text-lg font-bold ${platform.highlight ? "text-xl text-[color:var(--text-primary)]" : "text-[color:var(--text-muted)]"}`}
+                                    className={`font-bold ${platform.highlight ? "text-lg text-[color:var(--text-primary)] md:text-[1.15rem]" : "text-base text-[color:var(--text-muted)]"}`}
                                 >
                                     {platform.name}
                                 </h3>
@@ -231,7 +232,7 @@ export default function Comparison() {
                             {Object.keys(featureLabels).map((key, index) => (
                                 <motion.div
                                     key={key}
-                                    className={`relative flex h-16 items-center justify-center border-b transition-all duration-300 ${platform.highlight ? "border-white/5" : "border-transparent"} ${activeFeature === index && platform.highlight ? "bg-violet-500/10" : ""} ${platform.highlight ? "" : index !== Object.keys(featureLabels).length - 1 ? "bg-[length:1px_100%] bg-right bg-no-repeat bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" : ""}`}
+                                    className={`relative flex h-14 items-center justify-center border-b transition-all duration-300 ${platform.highlight ? "border-white/5" : "border-transparent"} ${activeFeature === index && platform.highlight ? "bg-violet-500/10" : ""} ${platform.highlight ? "" : index !== Object.keys(featureLabels).length - 1 ? "bg-[length:1px_100%] bg-right bg-no-repeat bg-gradient-to-b from-transparent via-white/[0.02] to-transparent" : ""}`}
                                     onMouseEnter={() => {
                                         setActiveFeature(index);
                                         setIsAutoPlaying(false);
@@ -248,17 +249,18 @@ export default function Comparison() {
                             ))}
 
                             {platform.highlight && (
-                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 rounded-b-2xl bg-gradient-to-t from-violet-500/10 to-transparent" />
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 rounded-b-2xl bg-gradient-to-t from-violet-500/10 to-transparent" />
                             )}
                         </div>
                     ))}
                 </motion.div>
+                </div>
 
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={isInView ? { opacity: 1 } : {}}
                     transition={{ duration: 0.6, delay: 0.8 }}
-                    className="mt-16 text-center text-sm text-[color:var(--text-primary)]/30"
+                    className="mt-10 text-center text-xs text-[color:var(--text-primary)]/30 sm:text-sm"
                 >
                     Responses are permanent here. The others still rent you the data layer.
                 </motion.p>

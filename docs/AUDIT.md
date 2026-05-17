@@ -6,7 +6,7 @@
 This document is an honest, non-marketing review of the current
 implementation against (a) the bounty brief and (b) the questions raised
 during review. **It calls out broken plumbing, missing features, and
-real tradeoffs.** Where something is " Coming-next: / not yet built" it is
+real tradeoffs.** Where something is not yet built it is
 labelled as such, not glossed over.
 
 ---
@@ -15,7 +15,7 @@ labelled as such, not glossed over.
 
 | Question | Verdict | Evidence |
 | --- | --- | --- |
-| Is this the *best* shape for the bounty? | **Yes for Step 1.** Walrus-native, no backend, immutable receipts, real E2E crypto, real AI. The one bounty-named primitive we substituted is Seal → Web Crypto ECIES (see §4 for the honest reason). | §1, §4, §8 |
+| Is this the *best* shape for the bounty? | **Yes.** Walrus-native, no backend, immutable receipts, real E2E crypto, real AI. The one bounty-named primitive we substituted is Seal → Web Crypto ECIES (see §4 for the honest reason). | §1, §4, §8 |
 | Do the pieces actually plug in (builder → Walrus → public form → responses)? | **Yes, end-to-end, no mocks.** Verified in code paths cited in §2.1. | §2.1 |
 | **Text-to-form** (Claude prompt → form schema)? | **Yes, real.** Claude Haiku 4.5 via the proxy, strict JSON-only system prompt, model + tokens pinned server-side. | §6, [ai-form-builder.ts](../app/src/lib/ai-form-builder.ts), [worker.ts](../ai-proxy/src/worker.ts) |
 | **Voice-to-form** (record + transcribe)? | **Yes, real.** `MediaRecorder` → `multipart/form-data` → Worker `/transcribe` → OpenAI Whisper → text. | §6, [Hero.tsx](../app/src/components/marketing/Hero.tsx) |
@@ -73,10 +73,10 @@ submission blocker left is flipping environment configuration to mainnet.
 | --- | --- | --- | --- |
 | **Hero attachments are sent to Claude via draft hydration.** Attachments are persisted in IndexedDB, loaded in `/builder?draft=...`, encoded into multimodal content blocks, and forwarded through the Claude proxy. Unsupported attachment types are explicitly skipped with context notes. | ✅ Implemented | [Hero.tsx](../app/src/components/marketing/Hero.tsx), [BuilderLayout.tsx](../app/src/components/builder/BuilderLayout.tsx), [ai-draft-storage.ts](../app/src/lib/ai-draft-storage.ts), [ai-attachments.ts](../app/src/lib/ai-attachments.ts). | Keep file limits strict and monitor prompt token size for very large text attachments. |
 | **Live edit route is implemented.** Builder now supports `/builder?id=<blobId>` and rehydrates from Walrus before republish. Republishing creates a new blob ID and old local index entries are removed to avoid duplicates. | ✅ Implemented | Edit mode shows explicit status in [BuilderLayout.tsx](../app/src/components/builder/BuilderLayout.tsx), rehydrates with `fetchJSON<FormConfig>`, and removes old index entries on publish completion. | Share URL changes on republish (expected for immutable blobs). A future on-chain pointer can provide stable URLs. |
-| **Cross-device dashboard doesn't work.** Form list lives in `localStorage` keyed per wallet ([formIndex.ts](../app/src/lib/formIndex.ts)). User connecting the same wallet on a second browser sees an empty dashboard. Same applies to the per-form submission list. | High UX, by design for Step 1. | Honest tradeoff documented in [SPEC.md](./SPEC.md) and  Coming-next: section. | Step 2: deploy a small Sui Move package (`FormRegistry` + `SubmissionRef`) and replace the local indexes. Until then, exporting/importing the index would be a quick hack. |
+| **Cross-device dashboard doesn't work.** Form list lives in `localStorage` keyed per wallet ([formIndex.ts](../app/src/lib/formIndex.ts)). User connecting the same wallet on a second browser sees an empty dashboard. Same applies to the per-form submission list. | High UX — not yet done. | This is a known architectural tradeoff. | Planned: deploy a small Sui Move package (`FormRegistry` + `SubmissionRef`) and replace the local indexes. |
 | **Live streaming voice** is shipped. Web Speech API (Chromium-native) streams partial transcripts into the prompt textarea while the user speaks; on stop, Whisper's accurate punctuated transcript replaces the partial in-place. | ✅ Implemented | [liveTranscription.ts](../app/src/lib/liveTranscription.ts) + [Hero.tsx](../app/src/components/marketing/Hero.tsx). Web Speech runs entirely on-device — no audio leaves the browser during the live phase; only the final blob hits the Whisper proxy. Firefox (no Web Speech) gracefully falls back to Whisper-only. | Track Web Speech browser support; Realtime API as an upgrade path if we want a single fully-server-side stream. |
 | **Auto-aggregate AI insights** are shipped. The `/responses` page now ships an `InsightsPanel` that rolls every cached Claude analysis into a single dashboard — sentiment distribution, suggested-priority distribution, and top topics across all submissions — with a one-click "Analyze N more" batch runner that fetches, decrypts, and analyzes the missing rows sequentially. | ✅ Implemented | `InsightsPanel` in [ResponsesPage.tsx](../app/src/components/responses/ResponsesPage.tsx); per-submission cache via [ai-submission-analysis.ts](../app/src/lib/ai-submission-analysis.ts) keyed by Walrus blob ID. | Surface trend over time (week-over-week sentiment) once forms accumulate enough volume. |
-| **MemWAL agent-memory integration.** Submissions are already permanent Walrus blobs and per-form analyses cache locally; a dedicated MemWAL adapter would let agents read back across forms and across users. | Roadmap | Not built yet. | Step 2: thin adapter that writes the aggregate roll-up as its own Walrus blob and registers it in the on-chain `FormRegistry`. |
+| **MemWAL agent-memory integration.** Submissions are already permanent Walrus blobs and per-form analyses cache locally; a dedicated MemWAL adapter would let agents read back across forms and across users. | Not done yet. | Not built yet. | Planned: thin adapter that writes the aggregate roll-up as its own Walrus blob and registers it in the on-chain `FormRegistry`. |
 | **Admin notes / priority / tags / export** are implemented in responses UI. | ✅ Implemented | Per-row notes + priority editor + tag chips/input are persisted in `localStorage`, with JSON/CSV export buttons in [ResponsesPage.tsx](../app/src/components/responses/ResponsesPage.tsx). | Filter dropdown now includes a dynamic `Tags` group surfacing every tag in use — picking one filters the list to matching submissions. |
 | **Form submission "thank-you"** is rich. | ✅ Implemented | Thank-you screen now shows a Walrus receipt: truncated blob ID with a one-click copy button and an "open on Walrus" link to the live aggregator URL ([PublicFormPage.tsx](../app/src/components/form/PublicFormPage.tsx)). | Done. |
 | **No mainnet flip.** | **Blocking for submission.** | Defaults in [walrus.ts](../app/src/lib/walrus.ts#L7) and [dapp-kit.ts](../app/src/lib/dapp-kit.ts#L13). | Copy [.env.production.example](../app/.env.production.example) to `app/.env.production.local` (sets `NEXT_PUBLIC_SUI_NETWORK=mainnet`, mainnet Walrus aggregator + publisher, AI proxy URL) and run `pnpm build`. |
@@ -134,7 +134,7 @@ tradeoff:
     the local key is missing.
   - Honest UI copy: "End-to-end encrypted" everywhere (we removed all
     "Seal-encrypted" claims).
-- **Coming-next: plan:** install `@mysten/seal`, write the Move package,
+- **Planned:** install `@mysten/seal`, write the Move package,
   use `decentralized` + 2 independent key servers (IDs in the docs),
   switch `crypto.ts` to a `seal.ts` adapter behind the same interface.
   Existing forms keep working through the v1 envelope; new private
@@ -207,7 +207,7 @@ tradeoff:
 ### 7.4 What we did *not* do
 
 - **Response headers remain limited on Walrus Sites.** A static-compatible `<meta http-equiv="Content-Security-Policy" …>` is now in `app/layout.tsx` with explicit `default-src`, `script-src`, `connect-src`, `img-src`, `media-src`, `frame-ancestors`, and related restrictions. COOP/COEP response headers are still unavailable in this hosting model.
-- **No abuse rate-limit on Walrus uploads.** A motivated user could spam the publisher with submissions. Step 2's on-chain `SubmissionRef` would naturally rate-limit by gas.
+- **No abuse rate-limit on Walrus uploads.** A motivated user could spam the publisher with submissions. A future on-chain `SubmissionRef` would naturally rate-limit by gas.
 - **No e2e tests.** No Playwright suite covering publish → submit → decrypt. Manual smoke only.
 
 ### 7.5 Concrete security TODOs (ordered by ROI)
@@ -270,7 +270,7 @@ panel** that rolls every cached analysis into sentiment, priority, and
 top-topics dashboards. No mocks where the docs claim functionality.
 
 The real remaining gaps are **(1) mainnet env not flipped and (2)
-cross-device sync waiting on Step 2's Move contract**. Both are
+cross-device sync — requires the Move contract that is not yet built**. Both are
 scoped, well-understood, and unblock with a few hours of work each.
 
 The correctness bug surfaced during the original audit pass

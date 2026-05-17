@@ -1,0 +1,44 @@
+{
+    "name": "@scrolls/sdk",
+    "version": "0.1.0",
+    "description": "Scrolls Forms SDK — create, publish and read Walrus-native forms from any Node program.",
+    "license": "MIT",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsup src/index.ts --format esm --dts --clean --target node20",
+        "dev": "tsup src/index.ts --format esm --dts --watch --target node20",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@mysten/sui": "^2.16.2",
+        "yaml": "^2.6.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "tsup": "^8.3.5",
+        "typescript": "^5.6.0"
+    },
+    "engines": {
+        "node": ">=20"
+    },
+    "keywords": [
+        "scrolls",
+        "walrus",
+        "sui",
+        "forms",
+        "feedback",
+        "seal"
+    ]
+}

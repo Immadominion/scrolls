@@ -124,3 +124,86 @@ function escapeCSV(value: string): string {
     }
     return value;
 }
+
+// ─────────────────────────────────────────────────
+// Cross-form inbox export
+//
+// The inbox aggregates submissions from any number of forms, so we
+// can't reuse the per-form column-aligned CSV directly. We emit a
+// flatter "row per submission" CSV with a JSON-encoded `responses`
+// column that preserves every field label + value pair. Encrypted-
+// and-still-locked rows are omitted (same rule as per-form export).
+// ─────────────────────────────────────────────────
+
+export interface InboxExportRow {
+    formId: string;
+    formTitle: string;
+    submissionBlobId: string;
+    submittedAt: string;
+    submitterAddress?: string | null;
+    isEncrypted: boolean;
+    isDecrypted: boolean;
+    priority?: string;
+    tags?: string[];
+    notes?: string;
+    aiSummary?: string;
+    aiSentiment?: string;
+    aiCategory?: string;
+    responses: Record<string, string | string[] | number | boolean>;
+}
+
+export function exportInboxAsCSV(rows: InboxExportRow[]): string {
+    const headers = [
+        "Form",
+        "Form ID",
+        "Submission Blob",
+        "Submitted At",
+        "Submitter",
+        "Status",
+        "Priority",
+        "Tags",
+        "AI Sentiment",
+        "AI Category",
+        "AI Summary",
+        "Notes",
+        "Responses (JSON)",
+    ];
+    const csvRows: string[] = [headers.map(escapeCSV).join(",")];
+
+    for (const row of rows) {
+        if (row.isEncrypted && !row.isDecrypted) continue;
+        const status = row.isEncrypted ? "encrypted" : "public";
+        const responsesJson = JSON.stringify(row.responses);
+        csvRows.push(
+            [
+                escapeCSV(row.formTitle),
+                escapeCSV(row.formId),
+                escapeCSV(row.submissionBlobId),
+                escapeCSV(row.submittedAt),
+                escapeCSV(row.submitterAddress || "(anonymous)"),
+                escapeCSV(status),
+                escapeCSV(row.priority ?? ""),
+                escapeCSV((row.tags ?? []).join("; ")),
+                escapeCSV(row.aiSentiment ?? ""),
+                escapeCSV(row.aiCategory ?? ""),
+                escapeCSV(row.aiSummary ?? ""),
+                escapeCSV(row.notes ?? ""),
+                escapeCSV(responsesJson),
+            ].join(","),
+        );
+    }
+    return csvRows.join("\n");
+}
+
+export function exportInboxAsJSON(rows: InboxExportRow[]): string {
+    return JSON.stringify(
+        {
+            kind: "scrolls.inbox-export.v1",
+            exportedAt: new Date().toISOString(),
+            count: rows.length,
+            rows,
+        },
+        null,
+        2,
+    );
+}

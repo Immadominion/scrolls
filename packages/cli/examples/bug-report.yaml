@@ -1,0 +1,34 @@
+# Sample Scrolls form spec. Publish with:
+#
+#   scrolls create examples/bug-report.yaml
+#
+# Field types: short_text, long_text, rich_text, dropdown, multi_select,
+# star_rating, file_upload, video_upload, url, confirm_checkbox.
+
+title: Bug report
+description: Help us squash it. Anything you can share helps.
+
+settings:
+    isPrivate: false   # set to true to encrypt every response
+    allowAnonymous: true
+
+fields:
+    - type: short_text
+      label: Title
+      required: true
+      placeholder: One-line summary
+
+    - type: long_text
+      label: What happened?
+      required: true
+      placeholder: Steps, expected, actual
+
+    - type: dropdown
+      label: Severity
+      required: true
+      options: [low, medium, high, critical]
+
+    - type: short_text
+      label: Contact email
+      required: false
+      placeholder: you@example.com

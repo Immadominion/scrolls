@@ -58,13 +58,35 @@ Submission for **Walrus Sessions Round 2 — Form Tooling** ($1,500).
 
 ---
 
+## Programmatic access
+
+The web builder is one of three ways to use Scrolls. The other two are for scripts and agents:
+
+```bash
+# CLI — publish a form from your terminal
+npm i -g @scrolls/cli
+scrolls init
+scrolls create bug-report.yaml
+
+# MCP — let Claude or Cursor drive Scrolls
+npm i -g @scrolls/mcp
+# then add `scrolls-mcp` to your MCP client's config
+```
+
+Same forms, same dashboard, same encryption keys — whichever surface you use, the data lives on Walrus and shows up at [`scrolls.fun/dashboard`](https://scrolls.fun/dashboard).
+
+Full reference: **[docs/PROGRAMMATIC.md](./docs/PROGRAMMATIC.md)** · packages live in [`packages/`](./packages/) ([`sdk`](./packages/sdk/) · [`cli`](./packages/cli/) · [`mcp`](./packages/mcp/)).
+
+---
+
 ## Repo layout
 
 ```
 app/         Next.js 16 (App Router, static export). The product.
 ai-proxy/    Cloudflare Worker — Anthropic + Whisper proxy + /s shortener
 move/scrolls Move package: form_pointer, submission_ref, seal_policy
-docs/        SPEC, ENGINEERING-PLAN, TESTING
+packages/    @scrolls/sdk, @scrolls/cli, @scrolls/mcp
+docs/        SPEC, ENGINEERING-PLAN, TESTING, PROGRAMMATIC
 ```
 
 For deeper dives:

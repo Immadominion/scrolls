@@ -15,7 +15,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
 import clsx from "clsx";
 import type { AIAnalysis, FormConfig, Submission, SubmissionResponse } from "@/types";
@@ -35,6 +35,7 @@ import {
 import { decryptFromPolicy, isSealEnvelope, type SealEnvelopeV2 } from "@/lib/seal";
 import { useScrollsAccount, useScrollsDAppKit } from "@/lib/useScrollsAccount";
 import AdminPanel from "./AdminPanel";
+import ShareCardModal from "@/components/share/ShareCardModal";
 import {
     loadHardenedFormPrivateKey,
     storeHardenedFormPrivateKey,
@@ -187,6 +188,7 @@ function ResponsesContent() {
     const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priority">("newest");
     const [filterBy, setFilterBy] = useState<string>("all");
     const [showAdminPanel, setShowAdminPanel] = useState(false);
+    const [shareOpen, setShareOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const account = useScrollsAccount();
     const dAppKit = useScrollsDAppKit();
@@ -428,6 +430,15 @@ function ResponsesContent() {
                                     Admins
                                 </button>
                             )}
+                            <button
+                                onClick={() => setShareOpen(true)}
+                                disabled={!formConfig}
+                                className="px-3 py-1.5 rounded-full bg-[#a78bfa]/10 border border-[#a78bfa]/30 text-xs text-[#a78bfa] hover:bg-[#a78bfa]/15 hover:border-[#a78bfa]/50 inline-flex items-center gap-1.5 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                                title="Share card & QR"
+                            >
+                                <Icon icon="fluent:qr-code-24-regular" className="w-3.5 h-3.5" />
+                                Share
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -597,9 +608,7 @@ function ResponsesContent() {
             )}
 
             <p className="text-[10px] text-[color:var(--text-soft)] mt-10 leading-relaxed max-w-md">
-                Phase 1 stores the response index in this browser&apos;s local
-                storage. Phase 2 will move it on-chain so the same list
-                appears on any device the form owner connects.
+                Response indexes on this device are browser-local. Connecting the same wallet on another device starts a fresh list.
             </p>
 
             {showAdminPanel && formConfig?.policyId && (
@@ -608,6 +617,22 @@ function ResponsesContent() {
                     onClose={() => setShowAdminPanel(false)}
                 />
             )}
+
+            <AnimatePresence>
+                {shareOpen && formConfig && (
+                    <ShareCardModal
+                        title={formConfig.title || "Untitled form"}
+                        canonicalUrl={
+                            typeof window !== "undefined"
+                                ? `${window.location.origin}/f?id=${formId}`
+                                : `/f?id=${formId}`
+                        }
+                        isPrivate={formConfig.settings.isPrivate}
+                        blobId={formConfig.walrusBlobId ?? formId}
+                        onClose={() => setShareOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }

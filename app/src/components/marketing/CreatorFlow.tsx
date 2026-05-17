@@ -206,83 +206,80 @@ export default function CreatorFlow() {
                 </div>
 
                 <div className="relative mx-auto w-full max-w-7xl relative z-10">
-                    <div className="mb-14 max-w-2xl">
-                        <h2 className="mb-6 font-display text-4xl font-bold tracking-tight text-[color:var(--text-primary)] md:text-5xl lg:text-6xl">
+                    <div className="mb-12 max-w-2xl">
+                        <h2 className="mb-4 font-display text-4xl font-bold tracking-tight text-[color:var(--text-primary)] md:text-5xl lg:text-6xl">
                             The full flow.
                             <br />
                             <span className="text-[color:var(--text-primary)]/40">Start to finish.</span>
                         </h2>
-                        <p className="text-lg leading-relaxed text-[color:var(--text-primary)]/45">
+                        <p className="text-base leading-relaxed text-[color:var(--text-primary)]/45">
                             Scrolls should read like one section here, not a long scrollytelling detour.
                             Pick a step and preview the flow inline.
                         </p>
                     </div>
-                </div>
 
-                <div className="grid grid-cols-1 items-stretch gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.9fr)] lg:gap-20">
-                    <div className="grid gap-4">
-                        {steps.map((step, index) => {
-                            const isActive = activeStep === index;
+                    <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-[1fr_minmax(360px,480px)] lg:gap-12">
+                        <div className="grid gap-3">
+                            {steps.map((step, index) => {
+                                const isActive = activeStep === index;
+                                const transitionClasses = `transition-all duration-500`;
 
-                            // Let Framer transform fading so inactive text isn't entirely muted
-                            const transitionClasses = `transition-all duration-500`;
-
-                            return (
-                                <button
-                                    key={step.id}
-                                    type="button"
-                                    onClick={() => {
-                                        // On click, scroll page to where this step pins
-                                        const yPos = containerRef.current!.offsetTop + (window.innerHeight * index);
-                                        window.scrollTo({ top: yPos, behavior: 'smooth' });
-                                    }}
-                                    className={`relative rounded-[28px] border px-6 py-6 text-left ${transitionClasses} ${isActive ? "border-violet-400/40 bg-violet-500/[0.08]" : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04]"}`}
-                                >
-                                    <div className="mb-4 flex items-center gap-4">
-                                        <span
-                                            className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border ${transitionClasses} ${isActive ? "border-violet-400/40 bg-violet-500/15 text-violet-300" : "border-white/[0.08] bg-white/[0.04] text-[color:var(--text-primary)]/40"}`}
-                                        >
-                                            <Icon icon={step.icon} className="h-5 w-5" />
-                                        </span>
-                                        <div>
-                                            <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-primary)]/28">
-                                                Step {index + 1}
-                                            </p>
-                                            <h3 className={`mt-1 text-2xl font-semibold transition-colors duration-300 ${isActive ? "text-[color:var(--text-primary)]" : "text-[color:var(--text-primary)]/40"}`}>
-                                                {step.title}
-                                            </h3>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className={`overflow-hidden transition-all duration-500 ease-[0.25,0.4,0.25,1] ${isActive ? 'max-h-32 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}
+                                return (
+                                    <button
+                                        key={step.id}
+                                        type="button"
+                                        onClick={() => {
+                                            const yPos = containerRef.current!.offsetTop + (window.innerHeight * index);
+                                            window.scrollTo({ top: yPos, behavior: 'smooth' });
+                                        }}
+                                        className={`relative rounded-[24px] border text-left ${transitionClasses} ${isActive ? "border-violet-400/40 bg-violet-500/[0.08] px-6 py-5" : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04] px-6 py-4"}`}
                                     >
-                                        <p className="max-w-xl text-base leading-7 text-[color:var(--text-muted)]">
-                                            {step.description}
-                                        </p>
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
+                                        <div className="flex items-center gap-4">
+                                            <span
+                                                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${transitionClasses} ${isActive ? "border-violet-400/40 bg-violet-500/15 text-violet-300" : "border-white/[0.08] bg-white/[0.04] text-[color:var(--text-primary)]/40"}`}
+                                            >
+                                                <Icon icon={step.icon} className="h-4.5 w-4.5" />
+                                            </span>
+                                            <div>
+                                                <p className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--text-primary)]/28">
+                                                    Step {index + 1}
+                                                </p>
+                                                <h3 className={`mt-0.5 text-xl font-semibold transition-colors duration-300 ${isActive ? "text-[color:var(--text-primary)]" : "text-[color:var(--text-primary)]/40"}`}>
+                                                    {step.title}
+                                                </h3>
+                                            </div>
+                                        </div>
 
-                    <div className="flex h-full">
-                        <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-3xl border border-white/[0.08] bg-zinc-900/40 backdrop-blur-sm">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={activeStep}
-                                    initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                                    exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-                                    transition={{
-                                        duration: 0.5,
-                                        ease: [0.25, 0.1, 0.25, 1],
-                                    }}
-                                    className="absolute inset-0 flex items-center justify-center"
-                                >
-                                    <ActiveVisual />
-                                </motion.div>
-                            </AnimatePresence>
+                                        <div
+                                            className={`overflow-hidden transition-all duration-500 ease-[0.25,0.4,0.25,1] ${isActive ? 'max-h-40 opacity-100 mt-3' : 'max-h-0 opacity-0 mt-0'}`}
+                                        >
+                                            <p className="max-w-xl text-sm leading-6 text-[color:var(--text-muted)]">
+                                                {step.description}
+                                            </p>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex h-full min-h-[360px]">
+                            <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/40 backdrop-blur-sm">
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={activeStep}
+                                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                                        exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+                                        transition={{
+                                            duration: 0.5,
+                                            ease: [0.25, 0.1, 0.25, 1],
+                                        }}
+                                        className="absolute inset-0 flex items-center justify-center"
+                                    >
+                                        <ActiveVisual />
+                                    </motion.div>
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </div>
                 </div>

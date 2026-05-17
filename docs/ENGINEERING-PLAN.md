@@ -19,7 +19,7 @@ The product is live end-to-end on Walrus testnet with **no Move contract** and *
 - ✅ Static export builds as 6 prerendered routes (`/`, `/builder`, `/dashboard`, `/f`, `/responses`, `/_not-found`).
 - ✅ AI proxy (`ai-proxy/`) deployed on Cloudflare Workers with KV-based rate limiting.
 
-Coming next:
+**Not done yet:**
 
 - ⏳ Move contract `FormRegistry` + `SubmissionRef` for cross-device sync (replaces localStorage indexes).
 - ⏳ **Seal upgrade** for private forms: deploy a Move package with `seal_approve*` so multiple admins can decrypt without sharing the raw key, and so a lost backup file is no longer fatal.
@@ -77,7 +77,7 @@ Coming next:
 - Creators/admins authenticate with a Sui wallet **or Sign-in-with-Google via Enoki**; respondents remain anonymous unless a form disables it
 - Seal remains the privacy layer for private submissions (planned)
 - AI surface is prompt-to-form generation + voice→form using Claude Haiku 4.5 + Whisper-1, both via the Cloudflare Worker proxy
-- Walrus storage writes are paid by the connected wallet today; sponsored Walrus + Sui writes via Enoki land in Step 2
+- Walrus storage writes are paid by the connected wallet today; sponsored Walrus + Sui writes via Enoki are not yet implemented
 
 ---
 
@@ -141,7 +141,7 @@ Run `/impeccable teach` to generate `PRODUCT.md`:
 
 ---
 
-## Step 1 — Form Builder UI (Day 2–4)
+## Form Builder UI
 
 ### Goal
 
@@ -221,7 +221,7 @@ Run `/impeccable animate` on the builder:
 
 ---
 
-##  Coming-next: — Walrus Storage Integration (Day 4–5)
+## Walrus Storage Integration
 
 ### Goal
 

@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
 import { X, Loader2, Copy, Check, ExternalLink, Lock, Download, Link as LinkIcon } from "lucide-react";
 import clsx from "clsx";
 import type { FormConfig } from "@/types";
-import ShareModal from "./ShareModal";
+import ShareCardModal from "@/components/share/ShareCardModal";
 import { uploadJSON } from "@/lib/walrus";
 import { addForm } from "@/lib/formIndex";
 import { removeDraft } from "@/lib/draftIndex";
@@ -251,13 +251,13 @@ function DoneStep({
                 </a>
             </div>
 
-            {/* Short link / share */}
+            {/* Share card / short link */}
             <button
                 onClick={() => setShareOpen(true)}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[color:var(--border-subtle)] bg-[color:var(--surface-solid)] text-sm font-medium text-[color:var(--text-secondary)] hover:text-[color:var(--text-primary)] hover:border-[color:var(--border-strong)] transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#a78bfa] text-[#0a0a0a] text-sm font-semibold hover:bg-[#c4b5fd] transition-colors"
             >
                 <LinkIcon size={14} />
-                Get a short link &amp; QR code
+                Open share card &amp; QR
             </button>
 
             {/* Decryption key backup (private forms only) */}
@@ -310,9 +310,11 @@ function DoneStep({
 
             <AnimatePresence>
                 {shareOpen && (
-                    <ShareModal
-                        formConfig={formConfig}
+                    <ShareCardModal
+                        title={formConfig.title || "Untitled form"}
                         canonicalUrl={formUrl}
+                        isPrivate={formConfig.settings.isPrivate}
+                        blobId={formConfig.walrusBlobId}
                         onClose={() => setShareOpen(false)}
                     />
                 )}
