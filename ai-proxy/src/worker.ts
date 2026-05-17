@@ -34,6 +34,8 @@ interface Env {
     RELAY_PRIVATE_KEY?: string;
     /** Move package id on Sui mainnet (form_pointer / submission_ref). */
     SCROLLS_PACKAGE_MAINNET?: string;
+    /** Sui JSON-RPC URL used to verify zkLogin signatures (default: mainnet). */
+    SUI_RPC_URL?: string;
 }
 
 const ALLOWED_MODEL = "claude-haiku-4-5-20251001";
@@ -60,7 +62,9 @@ export default {
         const url = new URL(request.url);
         const origin = request.headers.get("Origin") ?? "";
         const allowed = parseAllowedOrigins(env.ALLOWED_ORIGINS);
-        const corsOrigin = allowed.has(origin) ? origin : null;
+        // Also accept any *.wal.app subdomain (Walrus Sites portals).
+        const isWalApp = /^https:\/\/[a-z0-9][a-z0-9-]*\.wal\.app$/.test(origin);
+        const corsOrigin = (allowed.has(origin) || isWalApp) ? origin : null;
 
         // ── CORS preflight ────────────────────────────────────────
         if (request.method === "OPTIONS") {
@@ -607,7 +611,8 @@ async function handleShortLinkCreate(
     if (!body.address || !body.signature || !body.message) {
         return json({ error: "address, signature, message required" }, 400, corsOrigin);
     }
-    const sigCheck = await verifySig(body.message, body.signature, body.address);
+    const suiRpcUrl = env.SUI_RPC_URL ?? "https://fullnode.mainnet.sui.io:443";
+    const sigCheck = await verifySig(body.message, body.signature, body.address, suiRpcUrl);
     if (!sigCheck.ok) {
         return json({ error: sigCheck.error }, 401, corsOrigin);
     }
@@ -700,7 +705,8 @@ async function handleShortLinkDelete(
     if (!body.address || !body.signature || !body.message) {
         return json({ error: "address, signature, message required" }, 400, corsOrigin);
     }
-    const sigCheck = await verifySig(body.message, body.signature, body.address);
+    const suiRpcUrl = env.SUI_RPC_URL ?? "https://fullnode.mainnet.sui.io:443";
+    const sigCheck = await verifySig(body.message, body.signature, body.address, suiRpcUrl);
     if (!sigCheck.ok) {
         return json({ error: sigCheck.error }, 401, corsOrigin);
     }
@@ -773,6 +779,7 @@ async function verifySig(
     message: string,
     signature: string,
     expectedAddress: string,
+    suiRpcUrl: string,
 ): Promise<SigCheck> {
     // Replay window: signed messages embed an `Issued: <iso>` line.
     const fields = parseSignedFields(message);
@@ -784,9 +791,15 @@ async function verifySig(
         return { ok: false, error: "Signed message expired or clock skewed" };
     }
     try {
+        // Pass a Sui JSON-RPC client so zkLogin signatures (Enoki / Google
+        // sign-in) can be verified. Regular Ed25519/Secp256k1 signatures work
+        // with or without the client; zkLogin requires it to fetch the current
+        // epoch and verify the ZK proof on-chain.
+        const client = new SuiJsonRpcClient({ url: suiRpcUrl, network: "mainnet" });
         const publicKey = await verifyPersonalMessageSignature(
             new TextEncoder().encode(message),
             signature,
+            { client },
         );
         const recoveredAddress = publicKey.toSuiAddress();
         if (recoveredAddress.toLowerCase() !== expectedAddress.toLowerCase()) {

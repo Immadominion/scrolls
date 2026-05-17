@@ -8,6 +8,8 @@ ALLOWED_ORIGINS = "http://localhost:3000,http://localhost:3001,https://scrolls.f
 RATE_LIMIT_PER_WINDOW = "60"
 RATE_LIMIT_WINDOW_SECONDS = "600"
 SCROLLS_PACKAGE_MAINNET = "0xbd376f7ee099f1b91b52c00dc4f5b3f8535bffd02b44baa2f9aba225abe64d95"
+# Sui JSON-RPC used to verify zkLogin signatures (mainnet = production).
+SUI_RPC_URL = "https://fullnode.mainnet.sui.io:443"
 
 # Created with: wrangler kv namespace create RATE_LIMIT
 # Replace the placeholder id below with the value wrangler prints.
